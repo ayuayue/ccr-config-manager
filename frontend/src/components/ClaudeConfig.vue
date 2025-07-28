@@ -532,36 +532,36 @@ onMounted(() => {
 .header {
   background-color: #2c3e50;
   color: white;
-  padding: 15px;
+  padding: 5px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
   text-align: center;
   margin: 0;
-  font-size: 1.4em;
-  font-weight: 500;
+  font-size: 1em;
+  font-weight: 300;
 }
 
 .config-layout {
   display: flex;
-  height: calc(100vh - 100px);
-  padding: 15px;
-  gap: 15px;
+  height: 1000px;
+  padding: 5px;
+  gap: 5px;
 }
 
 .config-sidebar {
   flex: 0 0 300px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 5px;
 }
 
 .config-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 5px;
 }
 
 .config-section {
@@ -578,19 +578,19 @@ onMounted(() => {
   background-color: #3498db;
   color: white;
   margin: 0;
-  padding: 12px 15px;
+  padding: 5px 5px;
   font-size: 1em;
   font-weight: 500;
 }
 
 .card-content {
-  padding: 15px;
+  padding: 5px;
   overflow-y: auto;
   flex: 1;
 }
 
 .form-item {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 label {
@@ -616,7 +616,7 @@ label {
 
 input, textarea, select {
   width: 100%;
-  padding: 8px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 3px;
   box-sizing: border-box;
@@ -637,7 +637,7 @@ textarea {
 
 .route-select {
   width: 100%;
-  padding: 8px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 3px;
   box-sizing: border-box;
@@ -648,7 +648,7 @@ textarea {
 
 .route-input {
   width: 100%;
-  padding: 8px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 3px;
   box-sizing: border-box;
@@ -659,7 +659,7 @@ textarea {
 .full-config {
   width: 100%;
   height: 200px;
-  padding: 10px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
@@ -711,7 +711,7 @@ button:active {
 .providers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
+  gap: 5px;
   margin-bottom: 15px;
 }
 

@@ -200,14 +200,14 @@ onMounted(() => {
   color: #333;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   overflow: auto;
-  padding: 20px;
+  padding: 5px;
   box-sizing: border-box;
 }
 
 .header {
   background-color: #2c3e50;
   color: white;
-  padding: 15px;
+  padding: 5px;
   border-radius: 6px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
@@ -223,7 +223,7 @@ onMounted(() => {
 .config-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 20px;
+  gap: 5px;
   margin-bottom: 20px;
 }
 
@@ -244,7 +244,7 @@ onMounted(() => {
 }
 
 .summary-content {
-  padding: 15px;
+  padding: 5px;
 }
 
 .summary-item {
@@ -336,11 +336,11 @@ onMounted(() => {
 }
 
 .provider-content {
-  padding: 15px;
+  padding: 5px;
 }
 
 .provider-summary {
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .provider-summary .summary-item {
@@ -387,7 +387,7 @@ onMounted(() => {
 .full-config {
   width: 100%;
   height: 550px;
-  padding: 10px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 0 0 6px 6px;
   box-sizing: border-box;
