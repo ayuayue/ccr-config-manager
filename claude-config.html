@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Router 配置管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 150px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #2196F3;
+        }
+        .btn-secondary:hover {
+            background-color: #1976D2;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .section-title {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .provider-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .router-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .router-item label {
+            min-width: 150px;
+        }
+        .router-item input {
+            flex: 1;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Claude Code Router 配置管理</h1>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="section">
+            <h2 class="section-title">基础配置</h2>
+            <div class="form-group">
+                <label for="apiKey">API Key (可选)</label>
+                <input type="password" id="apiKey" placeholder="用于身份验证的密钥">
+                <div class="help-text">设置后，客户端请求必须在 Authorization 请求头或 x-api-key 请求头中提供此密钥</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="proxyUrl">代理 URL (可选)</label>
+                <input type="text" id="proxyUrl" placeholder="例如: http://127.0.0.1:7890">
+                <div class="help-text">为 API 请求设置代理</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="host">主机地址 (可选)</label>
+                <input type="text" id="host" placeholder="例如: 0.0.0.0">
+                <div class="help-text">设置服务的主机地址。如果未设置 APIKEY，出于安全考虑，主机地址将强制设置为 127.0.0.1</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiTimeout">API 超时时间 (毫秒)</label>
+                <input type="number" id="apiTimeout" placeholder="例如: 600000" value="600000">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="logEnabled"> 启用日志记录
+                </label>
+                <div class="help-text">启用后，日志文件将位于 $HOME/.claude-code-router.log</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">提供商配置</h2>
+            <div id="providers-container">
+                <!-- Providers will be added here dynamically -->
+            </div>
+            <button type="button" onclick="addProvider()">添加提供商</button>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">路由配置</h2>
+            <div class="router-item">
+                <label for="defaultRoute">默认路由</label>
+                <input type="text" id="defaultRoute" placeholder="例如: deepseek,deepseek-chat">
+            </div>
+            
+            <div class="router-item">
+                <label for="backgroundRoute">后台任务路由</label>
+                <input type="text" id="backgroundRoute" placeholder="例如: ollama,qwen2.5-coder:latest">
+            </div>
+            
+            <div class="router-item">
+                <label for="thinkRoute">推理任务路由</label>
+                <input type="text" id="thinkRoute" placeholder="例如: deepseek,deepseek-reasoner">
+            </div>
+            
+            <div class="router-item">
+                <label for="longContextRoute">长上下文路由</label>
+                <input type="text" id="longContextRoute" placeholder="例如: openrouter,google/gemini-2.5-pro-preview">
+            </div>
+            
+            <div class="router-item">
+                <label for="longContextThreshold">长上下文阈值</label>
+                <input type="number" id="longContextThreshold" placeholder="例如: 60000" value="60000">
+            </div>
+            
+            <div class="router-item">
+                <label for="webSearchRoute">网络搜索路由</label>
+                <input type="text" id="webSearchRoute" placeholder="例如: gemini,gemini-2.5-flash">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">完整配置 (JSON)</h2>
+            <div class="form-group">
+                <textarea id="fullConfig" placeholder="完整的配置文件内容（JSON格式）"></textarea>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button type="button" onclick="saveConfig()">保存配置</button>
+            <button type="button" class="btn-secondary" onclick="loadConfig()">加载配置</button>
+            <button type="button" class="btn-secondary" onclick="loadExampleConfig()">加载示例配置</button>
+            <button type="button" class="btn-danger" onclick="clearConfig()">清空配置</button>
+        </div>
+    </div>
+
+    <script>
+        // 添加提供商
+        function addProvider() {
+            const container = document.getElementById('providers-container');
+            const providerId = Date.now(); // 使用时间戳作为唯一ID
+            const providerHtml = `
+                <div class="provider-item" id="provider-${providerId}">
+                    <div class="form-group">
+                        <label>提供商名称</label>
+                        <input type="text" class="provider-name" placeholder="例如: openrouter">
+                    </div>
+                    <div class="form-group">
+                        <label>API 基础 URL</label>
+                        <input type="text" class="provider-api-base-url" placeholder="例如: https://openrouter.ai/api/v1/chat/completions">
+                    </div>
+                    <div class="form-group">
+                        <label>API 密钥</label>
+                        <input type="password" class="provider-api-key" placeholder="提供商的 API 密钥">
+                    </div>
+                    <div class="form-group">
+                        <label>模型列表 (每行一个)</label>
+                        <textarea class="provider-models" placeholder="例如:
+google/gemini-2.5-pro-preview
+anthropic/claude-sonnet-4
+anthropic/claude-3.5-sonnet"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>转换器 (JSON, 可选)</label>
+                        <textarea class="provider-transformer" placeholder='例如:
+{
+  "use": ["openrouter"]
+}'></textarea>
+                    </div>
+                    <button type="button" class="btn-danger" onclick="removeProvider(${providerId})">删除提供商</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', providerHtml);
+        }
+        
+        // 删除提供商
+        function removeProvider(providerId) {
+            const providerElement = document.getElementById(`provider-${providerId}`);
+            if (providerElement) {
+                providerElement.remove();
+            }
+        }
+        
+        // 显示状态消息
+        function showStatus(message, isSuccess) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = 'status ' + (isSuccess ? 'success' : 'error');
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 保存配置
+        function saveConfig() {
+            try {
+                // 构建配置对象
+                const config = {
+                    APIKEY: document.getElementById('apiKey').value || undefined,
+                    PROXY_URL: document.getElementById('proxyUrl').value || undefined,
+                    HOST: document.getElementById('host').value || undefined,
+                    API_TIMEOUT_MS: parseInt(document.getElementById('apiTimeout').value) || 600000,
+                    LOG: document.getElementById('logEnabled').checked,
+                    Providers: [],
+                    Router: {
+                        default: document.getElementById('defaultRoute').value || undefined,
+                        background: document.getElementById('backgroundRoute').value || undefined,
+                        think: document.getElementById('thinkRoute').value || undefined,
+                        longContext: document.getElementById('longContextRoute').value || undefined,
+                        longContextThreshold: parseInt(document.getElementById('longContextThreshold').value) || 60000,
+                        webSearch: document.getElementById('webSearchRoute').value || undefined
+                    }
+                };
+                
+                // 收集提供商配置
+                const providerElements = document.querySelectorAll('.provider-item');
+                providerElements.forEach(element => {
+                    const name = element.querySelector('.provider-name').value;
+                    const apiBaseUrl = element.querySelector('.provider-api-base-url').value;
+                    const apiKey = element.querySelector('.provider-api-key').value;
+                    const modelsText = element.querySelector('.provider-models').value;
+                    const transformerText = element.querySelector('.provider-transformer').value;
+                    
+                    if (name && apiBaseUrl && apiKey && modelsText) {
+                        const models = modelsText.split('\n').filter(model => model.trim() !== '');
+                        const provider = {
+                            name: name,
+                            api_base_url: apiBaseUrl,
+                            api_key: apiKey,
+                            models: models
+                        };
+                        
+                        if (transformerText) {
+                            try {
+                                provider.transformer = JSON.parse(transformerText);
+                            } catch (e) {
+                                console.warn('转换器配置不是有效的 JSON:', e);
+                            }
+                        }
+                        
+                        config.Providers.push(provider);
+                    }
+                });
+                
+                // 清理空值
+                Object.keys(config).forEach(key => {
+                    if (config[key] === undefined || 
+                        (Array.isArray(config[key]) && config[key].length === 0) ||
+                        (typeof config[key] === 'object' && Object.keys(config[key]).length === 0 && key !== 'Router')) {
+                        delete config[key];
+                    }
+                });
+                
+                // 更新完整配置文本区域
+                document.getElementById('fullConfig').value = JSON.stringify(config, null, 2);
+                
+                showStatus('配置已保存到文本区域，请手动复制到 ~/.claude-code-router/config.json 文件中', true);
+            } catch (error) {
+                showStatus('保存配置时出错: ' + error.message, false);
+            }
+        }
+        
+        // 加载配置
+        function loadConfig() {
+            try {
+                const configText = document.getElementById('fullConfig').value;
+                if (!configText) {
+                    showStatus('请先在完整配置区域输入 JSON 配置', false);
+                    return;
+                }
+                
+                const config = JSON.parse(configText);
+                
+                // 填充基础配置
+                document.getElementById('apiKey').value = config.APIKEY || '';
+                document.getElementById('proxyUrl').value = config.PROXY_URL || '';
+                document.getElementById('host').value = config.HOST || '';
+                document.getElementById('apiTimeout').value = config.API_TIMEOUT_MS || 600000;
+                document.getElementById('logEnabled').checked = !!config.LOG;
+                
+                // 填充路由配置
+                document.getElementById('defaultRoute').value = config.Router?.default || '';
+                document.getElementById('backgroundRoute').value = config.Router?.background || '';
+                document.getElementById('thinkRoute').value = config.Router?.think || '';
+                document.getElementById('longContextRoute').value = config.Router?.longContext || '';
+                document.getElementById('longContextThreshold').value = config.Router?.longContextThreshold || 60000;
+                document.getElementById('webSearchRoute').value = config.Router?.webSearch || '';
+                
+                // 清空现有提供商
+                const providersContainer = document.getElementById('providers-container');
+                providersContainer.innerHTML = '';
+                
+                // 填充提供商配置
+                if (config.Providers && Array.isArray(config.Providers)) {
+                    config.Providers.forEach(provider => {
+                        addProvider();
+                        const providerElements = document.querySelectorAll('.provider-item');
+                        const lastProviderElement = providerElements[providerElements.length - 1];
+                        
+                        lastProviderElement.querySelector('.provider-name').value = provider.name || '';
+                        lastProviderElement.querySelector('.provider-api-base-url').value = provider.api_base_url || '';
+                        lastProviderElement.querySelector('.provider-api-key').value = provider.api_key || '';
+                        lastProviderElement.querySelector('.provider-models').value = (provider.models || []).join('\n');
+                        lastProviderElement.querySelector('.provider-transformer').value = provider.transformer ? JSON.stringify(provider.transformer, null, 2) : '';
+                    });
+                }
+                
+                showStatus('配置加载成功', true);
+            } catch (error) {
+                showStatus('加载配置时出错: ' + error.message, false);
+            }
+        }
+        
+        // 加载示例配置
+        function loadExampleConfig() {
+            const exampleConfig = {
+                "APIKEY": "your-secret-key",
+                "PROXY_URL": "http://127.0.0.1:7890",
+                "LOG": true,
+                "API_TIMEOUT_MS": 600000,
+                "Providers": [
+                    {
+                        "name": "openrouter",
+                        "api_base_url": "https://openrouter.ai/api/v1/chat/completions",
+                        "api_key": "sk-xxx",
+                        "models": [
+                            "google/gemini-2.5-pro-preview",
+                            "anthropic/claude-sonnet-4",
+                            "anthropic/claude-3.5-sonnet",
+                            "anthropic/claude-3.7-sonnet:thinking"
+                        ],
+                        "transformer": {
+                            "use": ["openrouter"]
+                        }
+                    },
+                    {
+                        "name": "deepseek",
+                        "api_base_url": "https://api.deepseek.com/chat/completions",
+                        "api_key": "sk-xxx",
+                        "models": ["deepseek-chat", "deepseek-reasoner"],
+                        "transformer": {
+                            "use": ["deepseek"],
+                            "deepseek-chat": {
+                                "use": ["tooluse"]
+                            }
+                        }
+                    }
+                ],
+                "Router": {
+                    "default": "deepseek,deepseek-chat",
+                    "background": "ollama,qwen2.5-coder:latest",
+                    "think": "deepseek,deepseek-reasoner",
+                    "longContext": "openrouter,google/gemini-2.5-pro-preview",
+                    "longContextThreshold": 60000,
+                    "webSearch": "gemini,gemini-2.5-flash"
+                }
+            };
+            
+            document.getElementById('fullConfig').value = JSON.stringify(exampleConfig, null, 2);
+            showStatus('示例配置已加载到完整配置区域', true);
+        }
+        
+        // 清空配置
+        function clearConfig() {
+            if (confirm('确定要清空所有配置吗？')) {
+                // 清空基础配置
+                document.getElementById('apiKey').value = '';
+                document.getElementById('proxyUrl').value = '';
+                document.getElementById('host').value = '';
+                document.getElementById('apiTimeout').value = '600000';
+                document.getElementById('logEnabled').checked = false;
+                
+                // 清空路由配置
+                document.getElementById('defaultRoute').value = '';
+                document.getElementById('backgroundRoute').value = '';
+                document.getElementById('thinkRoute').value = '';
+                document.getElementById('longContextRoute').value = '';
+                document.getElementById('longContextThreshold').value = '60000';
+                document.getElementById('webSearchRoute').value = '';
+                
+                // 清空提供商
+                document.getElementById('providers-container').innerHTML = '';
+                
+                // 清空完整配置
+                document.getElementById('fullConfig').value = '';
+                
+                showStatus('配置已清空', true);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加一个默认提供商示例
+            addProvider();
+        });
+    </script>
+</body>
+</html>
