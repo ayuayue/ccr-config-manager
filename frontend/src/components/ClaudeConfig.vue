@@ -523,10 +523,12 @@ onMounted(() => {
 .claude-config-container {
   width: 100%;
   height: 100%;
-  background-color: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
   color: #333;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  overflow: hidden;
+  overflow: auto;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 .header {
@@ -545,60 +547,76 @@ onMounted(() => {
 
 .config-layout {
   display: flex;
-  height: 1000px;
-  padding: 5px;
-  gap: 5px;
+  height: calc(100vh - 100px);
+  padding: 10px;
+  gap: 15px;
 }
 
 .config-sidebar {
-  flex: 0 0 300px;
+  flex: 0 0 350px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 15px;
 }
 
 .config-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 15px;
 }
 
 .config-section {
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   max-height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.config-section:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .card-header {
-  background-color: #3498db;
+  background: linear-gradient(90deg, #3498db 0%, #2c80b9 100%);
   color: white;
   margin: 0;
-  padding: 5px 5px;
-  font-size: 1em;
-  font-weight: 500;
+  padding: 15px 20px;
+  font-size: 1.2em;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .card-content {
-  padding: 5px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
 
 .form-item {
-  margin-bottom: 5px;
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.form-item:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 600;
   color: #2c3e50;
-  font-size: 0.9em;
+  font-size: 0.95em;
 }
 
 .checkbox-label {
@@ -606,54 +624,78 @@ label {
   align-items: center;
   font-weight: normal;
   cursor: pointer;
-  font-size: 0.9em;
+  font-size: 0.95em;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.checkbox-label:hover {
+  background-color: #f8f9fa;
 }
 
 .checkbox-label input[type="checkbox"] {
-  margin-right: 6px;
-  transform: scale(1.1);
+  margin-right: 10px;
+  transform: scale(1.2);
 }
 
 input, textarea, select {
   width: 100%;
-  padding: 5px;
+  padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 3px;
+  border-radius: 6px;
   box-sizing: border-box;
-  font-size: 0.9em;
+  font-size: 0.95em;
   font-family: inherit;
+  transition: all 0.2s ease;
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: #3498db;
-  box-shadow: 0 0 0 1px rgba(52, 152, 219, 0.2);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 textarea {
-  min-height: 80px;
+  min-height: 100px;
   font-family: monospace;
+  resize: vertical;
 }
 
 .route-select {
   width: 100%;
-  padding: 5px;
+  padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 3px;
+  border-radius: 6px;
   box-sizing: border-box;
-  font-size: 0.9em;
+  font-size: 0.95em;
   font-family: inherit;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.route-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .route-input {
   width: 100%;
-  padding: 5px;
+  padding: 12px 15px;
   border: 1px solid #ddd;
-  border-radius: 3px;
+  border-radius: 6px;
   box-sizing: border-box;
-  font-size: 0.9em;
+  font-size: 0.95em;
   font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.route-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .full-config {
@@ -672,95 +714,113 @@ textarea {
 }
 
 button {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
   color: white;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 3px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9em;
-  margin-right: 6px;
-  margin-bottom: 6px;
-  transition: all 0.1s ease;
+  font-size: 0.95em;
+  font-weight: 500;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
-  background-color: #45a049;
-}
-
-.btn-secondary {
-  background-color: #2196F3;
-}
-
-.btn-secondary:hover {
-  background-color: #1976D2;
-}
-
-.btn-danger {
-  background-color: #f44336;
-}
-
-.btn-danger:hover {
-  background-color: #d32f2f;
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
 button:active {
-  transform: scale(0.98);
+  transform: translateY(0);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
 }
 
 .providers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 5px;
-  margin-bottom: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .provider-card {
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  padding: 12px;
-  border-left: 3px solid #3498db;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 10px;
+  padding: 20px;
+  border-left: 4px solid #3498db;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.provider-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .provider-header h3 {
   color: #2c3e50;
-  margin: 0 0 10px 0;
-  font-size: 0.95em;
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
   font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .provider-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
 }
 
 .actions {
   text-align: center;
-  padding: 15px;
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .status {
-  padding: 10px;
-  border-radius: 3px;
-  margin-bottom: 15px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
   text-align: center;
-  font-size: 0.9em;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-size: 0.95em;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .status.success {
-  background-color: #d4edda;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   color: #155724;
   border: 1px solid #c3e6cb;
 }
 
 .status.error {
-  background-color: #f8d7da;
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
   color: #721c24;
   border: 1px solid #f5c6cb;
 }
@@ -772,7 +832,7 @@ button:active {
   font-style: italic;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .config-layout {
     flex-direction: column;
     height: auto;
@@ -783,31 +843,60 @@ button:active {
   }
   
   .providers-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .config-layout {
-    padding: 10px;
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
   
   .config-sidebar,
   .config-main {
-    gap: 10px;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .claude-config-container {
+    padding: 10px;
+  }
+  
+  .config-layout {
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .config-sidebar,
+  .config-main {
+    gap: 15px;
   }
   
   .providers-grid {
     grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .provider-card {
+    padding: 15px;
+  }
+  
+  .card-header {
+    padding: 12px 15px;
+    font-size: 1.1em;
+  }
+  
+  .card-content {
+    padding: 15px;
   }
   
   .form-item {
-    margin-bottom: 12px;
+    margin-bottom: 15px;
+    padding: 12px;
   }
   
   input, textarea, select, .route-select, .route-input {
-    padding: 6px;
+    padding: 10px 12px;
+  }
+  
+  button {
+    padding: 8px 12px;
+    font-size: 0.9em;
   }
   
   .header {
@@ -816,6 +905,83 @@ button:active {
   
   .header h1 {
     font-size: 1.2em;
+  }
+  
+  .actions {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .claude-config-container {
+    padding: 5px;
+  }
+  
+  .config-layout {
+    padding: 5px;
+    gap: 10px;
+  }
+  
+  .config-sidebar,
+  .config-main {
+    gap: 10px;
+  }
+  
+  .config-section {
+    border-radius: 8px;
+  }
+  
+  .card-header {
+    padding: 10px 12px;
+    font-size: 1em;
+  }
+  
+  .card-content {
+    padding: 12px;
+  }
+  
+  .form-item {
+    margin-bottom: 12px;
+    padding: 10px;
+  }
+  
+  label {
+    font-size: 0.9em;
+  }
+  
+  input, textarea, select, .route-select, .route-input {
+    padding: 8px 10px;
+    font-size: 0.9em;
+  }
+  
+  button {
+    padding: 6px 10px;
+    font-size: 0.85em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  
+  .providers-grid {
+    gap: 10px;
+  }
+  
+  .provider-card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+  
+  .provider-header h3 {
+    font-size: 1em;
+    margin: 0 0 10px 0;
+  }
+  
+  .actions {
+    padding: 15px;
+  }
+  
+  .status {
+    padding: 12px 15px;
+    font-size: 0.9em;
   }
 }
 </style>

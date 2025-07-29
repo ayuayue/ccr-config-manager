@@ -42,6 +42,24 @@ wails dev
 wails build
 ```
 
+### 自动化构建脚本
+
+项目提供了便捷的构建脚本：
+
+- **Linux/macOS**: 运行 `./build.sh`
+- **Windows**: 运行 `build.bat`
+
+## 发布流程
+
+本项目使用 GitHub Actions 进行自动化构建和发布。当推送带有 `v*.*.*` 格式的标签时，会自动触发构建流程，为以下平台生成发行版：
+
+- Windows (AMD64)
+- Linux (AMD64)
+- macOS (AMD64 - Intel)
+- macOS (ARM64 - Apple Silicon)
+
+构建完成的发行版会自动发布到 GitHub Releases 页面。
+
 ## 配置说明
 
 配置文件位于用户目录下的 `~/.claude-code-router/config.json` 文件中。

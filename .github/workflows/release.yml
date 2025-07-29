@@ -1,0 +1,119 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: amd64
+            asset_name: claudeConfigManager-linux-amd64
+          - os: windows-latest
+            platform: windows
+            arch: amd64
+            asset_name: claudeConfigManager-windows-amd64.exe
+          - os: macos-latest
+            platform: darwin
+            arch: amd64
+            asset_name: claudeConfigManager-darwin-amd64
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+            asset_name: claudeConfigManager-darwin-arm64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-0 libwebkit2gtk-4.1-dev
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build application
+        run: |
+          wails build -platform ${{ matrix.platform }}/${{ matrix.arch }} -o ${{ matrix.asset_name }}
+
+      - name: Package assets (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p dist
+          cp build/bin/${{ matrix.asset_name }} dist/
+          cp -r build/bin/assets dist/ || true
+          cd dist
+          tar -czf ../${{ matrix.asset_name }}.tar.gz *
+
+      - name: Package assets (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          mkdir -p dist
+          cp build/bin/${{ matrix.asset_name }} dist/
+          cp -r build/bin/assets dist/ || true
+          cd dist
+          7z a ../${{ matrix.asset_name }}.zip *
+
+      - name: Package assets (macOS)
+        if: matrix.platform == 'darwin'
+        run: |
+          mkdir -p dist
+          cp build/bin/${{ matrix.asset_name }} dist/
+          cp -r build/bin/assets dist/ || true
+          cd dist
+          tar -czf ../${{ matrix.asset_name }}.tar.gz *
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.asset_name }}
+          path: |
+            build/bin/${{ matrix.asset_name }}*
+            ${{ matrix.asset_name }}.tar.gz
+            ${{ matrix.asset_name }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: release-assets
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            release-assets/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
