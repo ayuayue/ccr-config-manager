@@ -10,120 +10,146 @@
     </div>
     
     <div v-else-if="config" class="config-display">
-      <div class="config-summary">
-        <div class="summary-card">
-          <h2>核心配置概览</h2>
-          <div class="summary-content">
-            <div class="summary-item">
-              <span class="label">API Key:</span>
-              <span class="value" v-if="config.APIKEY">
-                <span :class="{ masked: !showApiKeys['main'] }">{{ getDisplayApiKey(config.APIKEY, !showApiKeys['main']) }}</span>
-                <button class="toggle-btn" @click="toggleApiKeyVisibility('main')">
-                  {{ showApiKeys['main'] ? '隐藏' : '显示' }}
-                </button>
-              </span>
-              <span class="value" v-else>未设置</span>
+      <!-- 标签页导航 -->
+      <div class="tabs">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id" 
+          :class="['tab', { active: activeTab === tab.id }]"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.name }}
+        </button>
+      </div>
+      
+      <!-- 标签页内容 -->
+      <div class="tab-content">
+        <!-- 核心配置标签页 -->
+        <div v-show="activeTab === 'core'" class="tab-pane">
+          <div class="config-grid">
+            <div class="config-group">
+              <h3>核心配置</h3>
+              <div class="config-table">
+                <div class="config-row">
+                  <span class="label">API Key:</span>
+                  <span class="value" v-if="config.APIKEY">
+                    <span :class="{ masked: !showApiKeys['main'] }">{{ getDisplayApiKey(config.APIKEY, !showApiKeys['main']) }}</span>
+                    <button class="toggle-btn" @click="toggleApiKeyVisibility('main')">
+                      {{ showApiKeys['main'] ? '隐藏' : '显示' }}
+                    </button>
+                  </span>
+                  <span class="value" v-else>未设置</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">代理设置:</span>
+                  <span class="value">{{ config.PROXY_URL || '未设置' }}</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">主机地址:</span>
+                  <span class="value">{{ config.HOST || '默认 (127.0.0.1)' }}</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">超时时间:</span>
+                  <span class="value">{{ config.API_TIMEOUT_MS || 600000 }} 毫秒</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">日志记录:</span>
+                  <span class="value">{{ config.LOG ? '已启用' : '已禁用' }}</span>
+                </div>
+              </div>
             </div>
             
-            <div class="summary-item">
-              <span class="label">代理设置:</span>
-              <span class="value">{{ config.PROXY_URL || '未设置' }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="label">主机地址:</span>
-              <span class="value">{{ config.HOST || '默认 (127.0.0.1)' }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="label">超时时间:</span>
-              <span class="value">{{ config.API_TIMEOUT_MS || 600000 }} 毫秒</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="label">日志记录:</span>
-              <span class="value">{{ config.LOG ? '已启用' : '已禁用' }}</span>
+            <div class="config-group">
+              <h3>路由配置</h3>
+              <div class="config-table">
+                <div class="config-row">
+                  <span class="label">默认路由:</span>
+                  <span class="value">{{ config.Router?.default || '未设置' }}</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">后台任务:</span>
+                  <span class="value">{{ config.Router?.background || '未设置' }}</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">推理任务:</span>
+                  <span class="value">{{ config.Router?.think || '未设置' }}</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">长上下文:</span>
+                  <span class="value">{{ config.Router?.longContext || '未设置' }}</span>
+                </div>
+                
+                <div class="config-row">
+                  <span class="label">网络搜索:</span>
+                  <span class="value">{{ config.Router?.webSearch || '未设置' }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="summary-card">
-          <h2>路由配置</h2>
-          <div class="summary-content">
-            <div class="summary-item">
-              <span class="label">默认路由:</span>
-              <span class="value">{{ config.Router?.default || '未设置' }}</span>
+        <!-- 提供商配置标签页 -->
+        <div v-show="activeTab === 'providers'" class="tab-pane">
+          <div class="providers-section">
+            <div class="providers-header">
+              <h3>提供商配置 ({{ config.Providers?.length || 0 }} 个)</h3>
             </div>
-            
-            <div class="summary-item">
-              <span class="label">后台任务:</span>
-              <span class="value">{{ config.Router?.background || '未设置' }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="label">推理任务:</span>
-              <span class="value">{{ config.Router?.think || '未设置' }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="label">长上下文:</span>
-              <span class="value">{{ config.Router?.longContext || '未设置' }}</span>
-            </div>
-            
-            <div class="summary-item">
-              <span class="label">网络搜索:</span>
-              <span class="value">{{ config.Router?.webSearch || '未设置' }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="providers-section">
-        <h2>提供商配置</h2>
-        <div class="providers-grid">
-          <div v-for="(provider, index) in config.Providers" :key="index" class="provider-card">
-            <div class="provider-header">
-              <h3>{{ provider.name }}</h3>
-            </div>
-            <div class="provider-content">
-              <div class="provider-summary">
-                <div class="summary-item">
-                  <span class="label">API URL:</span>
-                  <span class="value">{{ provider.api_base_url }}</span>
+            <div class="providers-list">
+              <div 
+                v-for="(provider, index) in config.Providers" 
+                :key="index" 
+                class="provider-item"
+                :class="{ expanded: expandedProviders[index] }"
+              >
+                <div class="provider-summary" @click="toggleProvider(index)">
+                  <div class="provider-name">{{ provider.name }}</div>
+                  <div class="provider-models-count">{{ provider.models?.length || 0 }} 个模型</div>
+                  <div class="expand-icon">{{ expandedProviders[index] ? '▲' : '▼' }}</div>
                 </div>
-                
-                <div class="summary-item">
-                  <span class="label">API Key:</span>
-                  <span class="value">
-                    <span :class="{ masked: !showApiKeys['provider-' + index] }">{{ getDisplayApiKey(provider.api_key, !showApiKeys['provider-' + index]) }}</span>
-                    <button class="toggle-btn" @click="toggleApiKeyVisibility('provider-' + index)">
-                      {{ showApiKeys['provider-' + index] ? '隐藏' : '显示' }}
-                    </button>
-                  </span>
-                </div>
-                
-                <div class="summary-item">
-                  <span class="label">模型数量:</span>
-                  <span class="value">{{ provider.models?.length || 0 }}</span>
-                </div>
-              </div>
-              
-              <div class="models-list" v-if="provider.models && provider.models.length > 0">
-                <div class="models-header">支持的模型:</div>
-                <div class="models-tags">
-                  <span v-for="(model, modelIndex) in provider.models" :key="modelIndex" class="model-tag">
-                    {{ model }}
-                  </span>
+                <div v-show="expandedProviders[index]" class="provider-details">
+                  <div class="detail-row">
+                    <span class="label">API URL:</span>
+                    <span class="value">{{ provider.api_base_url }}</span>
+                  </div>
+                  
+                  <div class="detail-row">
+                    <span class="label">API Key:</span>
+                    <span class="value">
+                      <span :class="{ masked: !showApiKeys['provider-' + index] }">{{ getDisplayApiKey(provider.api_key, !showApiKeys['provider-' + index]) }}</span>
+                      <button class="toggle-btn small" @click.stop="toggleApiKeyVisibility('provider-' + index)">
+                        {{ showApiKeys['provider-' + index] ? '隐藏' : '显示' }}
+                      </button>
+                    </span>
+                  </div>
+                  
+                  <div class="models-section" v-if="provider.models && provider.models.length > 0">
+                    <div class="models-label">支持的模型:</div>
+                    <div class="models-grid">
+                      <span v-for="(model, modelIndex) in provider.models" :key="modelIndex" class="model-tag">
+                        {{ model }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="full-config-section">
-        <h2>完整配置 (JSON)</h2>
-        <textarea readonly class="full-config" :value="fullConfigJson"></textarea>
+        
+        <!-- 完整配置标签页 -->
+        <div v-show="activeTab === 'full'" class="tab-pane">
+          <div class="full-config-section">
+            <h3>完整配置 (JSON)</h3>
+            <textarea readonly class="full-config" :value="fullConfigJson"></textarea>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -142,8 +168,19 @@ const config = ref(null)
 const loading = ref(true)
 const error = ref('')
 
+// 标签页相关
+const activeTab = ref('core')
+const tabs = ref([
+  { id: 'core', name: '核心配置' },
+  { id: 'providers', name: '提供商配置' },
+  { id: 'full', name: '完整配置' }
+])
+
 // 控制 API Key 显示状态
 const showApiKeys = ref({})
+
+// 控制提供商展开状态
+const expandedProviders = ref({})
 
 // 计算属性：完整配置的 JSON 字符串
 const fullConfigJson = computed(() => {
@@ -163,6 +200,11 @@ function getDisplayApiKey(key, isMasked = true) {
     return key
   }
   return '•'.repeat(Math.min(key.length, 20))
+}
+
+// 切换提供商展开状态
+function toggleProvider(index) {
+  expandedProviders.value[index] = !expandedProviders.value[index]
 }
 
 // 加载配置
@@ -204,88 +246,106 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.header {
-  background-color: #2c3e50;
-  color: white;
-  padding: 5px;
-  border-radius: 6px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+/* 标签页导航 */
+.tabs {
+  display: flex;
+  gap: 5px;
   margin-bottom: 20px;
+  border-bottom: 2px solid #e1e8ed;
 }
 
-.header h1 {
-  text-align: center;
-  margin: 0;
-  font-size: 1.5em;
+.tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 0.95em;
   font-weight: 500;
+  color: #7f8c8d;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.config-summary {
+.tab:hover {
+  color: #3498db;
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.tab.active {
+  color: #3498db;
+  border-bottom: 3px solid #3498db;
+  background-color: rgba(52, 152, 219, 0.05);
+}
+
+/* 标签页内容 */
+.tab-content {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  min-height: 400px;
+}
+
+.tab-pane {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 核心配置网格 */
+.config-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 25px;
 }
 
-.summary-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.config-group {
+  background: #fafcff;
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid #e1e8ed;
 }
 
-.summary-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.summary-card h2 {
-  background: linear-gradient(90deg, #3498db 0%, #2c80b9 100%);
-  color: white;
-  margin: 0;
-  padding: 15px 20px;
-  font-size: 1.2em;
+.config-group h3 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 1.1em;
   font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.summary-content {
-  padding: 15px 20px;
-}
-
-.summary-item {
-  display: flex;
-  padding: 12px 0;
+  padding-bottom: 8px;
   border-bottom: 1px solid #eee;
-  transition: background-color 0.2s ease;
 }
 
-.summary-item:hover {
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
+.config-table {
+  padding: 0;
 }
 
-.summary-item:last-child {
+.config-row {
+  display: flex;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9em;
+}
+
+.config-row:last-child {
   border-bottom: none;
 }
 
-.summary-item .label {
+.config-row .label {
   font-weight: 600;
   color: #2c3e50;
-  min-width: 120px;
+  min-width: 100px;
   margin-right: 15px;
-  font-size: 0.95em;
   display: flex;
   align-items: center;
 }
 
-.summary-item .value {
+.config-row .value {
   flex: 1;
   color: #34495e;
-  font-size: 0.95em;
   word-break: break-word;
   display: flex;
   align-items: center;
@@ -302,92 +362,134 @@ onMounted(() => {
   color: white;
   border: none;
   padding: 4px 8px;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 0.8em;
-  transition: all 0.1s ease;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.small {
+  padding: 3px 6px;
+  font-size: 0.75em;
 }
 
 .toggle-btn:hover {
   background-color: #2980b9;
+  transform: translateY(-1px);
 }
 
 .toggle-btn:active {
   transform: scale(0.95);
 }
 
-.providers-section h2 {
-  background: linear-gradient(90deg, #3498db 0%, #2c80b9 100%);
-  color: white;
+/* 提供商配置 */
+.providers-section {
+  padding: 10px 0;
+}
+
+.providers-header h3 {
   margin: 0 0 15px 0;
-  padding: 15px 20px;
-  font-size: 1.2em;
-  font-weight: 600;
-  border-radius: 10px 10px 0 0;
-  letter-spacing: 0.5px;
-}
-
-.providers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.provider-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.provider-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.provider-header {
-  background: linear-gradient(90deg, #2c3e50 0%, #1a2530 100%);
-  color: white;
-  padding: 15px 20px;
-}
-
-.provider-header h3 {
-  margin: 0;
+  color: #2c3e50;
   font-size: 1.1em;
   font-weight: 600;
-  letter-spacing: 0.5px;
 }
 
-.provider-content {
-  padding: 15px 20px;
+.providers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.provider-item {
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafcff;
+  transition: all 0.3s ease;
+}
+
+.provider-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .provider-summary {
-  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #2c3e50 0%, #1a2530 100%);
+  color: white;
 }
 
-.provider-summary .summary-item {
-  padding: 8px 0;
-}
-
-.models-list {
-  border-top: 1px solid #eee;
-  padding-top: 10px;
-}
-
-.models-header {
+.provider-name {
+  flex: 1;
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 8px;
+  font-size: 1em;
+}
+
+.provider-models-count {
+  font-size: 0.9em;
+  opacity: 0.9;
+  margin-right: 15px;
+}
+
+.expand-icon {
+  font-size: 0.9em;
+  transition: transform 0.3s ease;
+}
+
+.provider-item.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+
+.provider-details {
+  padding: 15px 20px;
+  background: white;
+  border-top: 1px solid #e1e8ed;
+}
+
+.detail-row {
+  display: flex;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
   font-size: 0.9em;
 }
 
-.models-tags {
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row .label {
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 100px;
+  margin-right: 15px;
+}
+
+.detail-row .value {
+  flex: 1;
+  color: #34495e;
+  word-break: break-word;
+}
+
+.models-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.models-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+}
+
+.models-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .model-tag {
@@ -397,8 +499,6 @@ onMounted(() => {
   border-radius: 20px;
   font-size: 0.85em;
   font-weight: 500;
-  margin: 4px;
-  display: inline-block;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
@@ -408,29 +508,26 @@ onMounted(() => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.full-config-section h2 {
-  background: linear-gradient(90deg, #3498db 0%, #2c80b9 100%);
-  color: white;
+/* 完整配置区域 */
+.full-config-section h3 {
   margin: 0 0 15px 0;
-  padding: 15px 20px;
-  font-size: 1.2em;
+  color: #2c3e50;
+  font-size: 1.1em;
   font-weight: 600;
-  border-radius: 10px 10px 0 0;
-  letter-spacing: 0.5px;
 }
 
 .full-config {
   width: 100%;
-  height: 550px;
+  height: 800px;
   padding: 15px;
   border: 1px solid #ddd;
-  border-radius: 0 0 10px 10px;
+  border-radius: 6px;
   box-sizing: border-box;
   font-family: 'Courier New', monospace;
   background: linear-gradient(180deg, #fdfdfd 0%, #f8f9fa 100%);
   resize: vertical;
   font-size: 0.9em;
-  line-height: 1.4;
+  line-height: 1.5;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
   border: 1px solid #e1e8ed;
 }
@@ -440,15 +537,10 @@ onMounted(() => {
   padding: 50px;
   font-size: 18px;
   background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   margin: 20px;
   animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .loading {
@@ -487,112 +579,163 @@ onMounted(() => {
   margin-right: 10px;
 }
 
+/* 响应式设计 */
 @media (max-width: 768px) {
   .system-config-container {
     padding: 10px;
   }
   
-  .config-summary {
+  .tabs {
+    margin-bottom: 15px;
+  }
+  
+  .tab {
+    padding: 8px 15px;
+    font-size: 0.9em;
+  }
+  
+  .tab-content {
+    padding: 15px;
+  }
+  
+  .config-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 20px;
   }
   
-  .summary-card {
-    border-radius: 8px;
+  .config-group {
+    padding: 12px;
   }
   
-  .summary-card h2 {
-    padding: 12px 15px;
-    font-size: 1.1em;
+  .config-group h3 {
+    font-size: 1em;
+    margin-bottom: 12px;
   }
   
-  .summary-content {
-    padding: 12px 15px;
-  }
-  
-  .summary-item {
+  .config-row {
     flex-direction: column;
     gap: 4px;
-    padding: 10px 0;
+    padding: 8px 0;
   }
   
-  .summary-item .label {
+  .config-row .label {
     min-width: auto;
     margin-right: 0;
     font-weight: 600;
   }
   
-  .providers-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-  
-  .provider-card {
-    border-radius: 8px;
-  }
-  
-  .provider-header {
+  .provider-summary {
     padding: 12px 15px;
   }
   
-  .provider-header h3 {
-    font-size: 1em;
+  .provider-name {
+    font-size: 0.95em;
   }
   
-  .provider-content {
+  .provider-details {
     padding: 12px 15px;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 0;
+  }
+  
+  .detail-row .label {
+    min-width: auto;
+    margin-right: 0;
+  }
+  
+  .models-grid {
+    gap: 6px;
+  }
+  
+  .model-tag {
+    padding: 4px 10px;
+    font-size: 0.8em;
   }
   
   .full-config {
-    height: 400px;
+    height: 300px;
   }
   
   .loading, .error, .no-config {
     padding: 30px;
     font-size: 16px;
-    margin: 10px;
+    margin: 15px;
   }
 }
 
 @media (max-width: 480px) {
   .system-config-container {
-    padding: 5px;
+    padding: 8px;
   }
   
-  .summary-card h2 {
+  .tabs {
+    flex-wrap: wrap;
+  }
+  
+  .tab {
+    padding: 6px 12px;
+    font-size: 0.85em;
+  }
+  
+  .tab-content {
+    padding: 12px;
+  }
+  
+  .config-group {
+    padding: 10px;
+  }
+  
+  .config-group h3 {
+    font-size: 0.95em;
+    margin-bottom: 10px;
+  }
+  
+  .config-row,
+  .detail-row {
+    padding: 6px 0;
+  }
+  
+  .config-row .label,
+  .config-row .value,
+  .detail-row .label,
+  .detail-row .value {
+    font-size: 0.85em;
+  }
+  
+  .provider-summary {
     padding: 10px 12px;
-    font-size: 1em;
   }
   
-  .summary-content {
-    padding: 10px 12px;
-  }
-  
-  .summary-item {
-    padding: 8px 0;
-  }
-  
-  .summary-item .label,
-  .summary-item .value {
+  .provider-name {
     font-size: 0.9em;
   }
   
-  .provider-header {
-    padding: 10px 12px;
+  .provider-models-count {
+    font-size: 0.8em;
+    margin-right: 10px;
   }
   
-  .provider-content {
+  .provider-details {
     padding: 10px 12px;
   }
   
   .model-tag {
-    padding: 4px 8px;
-    font-size: 0.8em;
-    margin: 2px;
+    padding: 3px 8px;
+    font-size: 0.75em;
+    margin: 1px;
+  }
+  
+  .toggle-btn {
+    padding: 2px 4px;
+    font-size: 0.7em;
   }
   
   .full-config {
-    height: 300px;
+    height: 250px;
     padding: 10px;
     font-size: 0.8em;
   }
@@ -600,7 +743,7 @@ onMounted(() => {
   .loading, .error, .no-config {
     padding: 20px;
     font-size: 14px;
-    margin: 5px;
+    margin: 10px;
   }
 }
 </style>

@@ -142,9 +142,33 @@ jobs:
           choco install zip -y
           export PATH="/c/ProgramData/chocolatey/bin:$PATH"
           
-          cd build/bin
-          zip -j ../dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
-          cd ../..
+          # Ensure dist directory exists
+          mkdir -p dist
+          
+          # Use absolute path for zip command to avoid path issues
+          DIST_DIR="$(pwd)/dist"
+          BUILD_BIN_DIR="$(pwd)/build/bin"
+          
+          # Check if the executable exists
+          if [ -f "build/bin/claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}" ]; then
+            echo "Found executable, creating zip..."
+            cd "$BUILD_BIN_DIR"
+            zip -j "$DIST_DIR/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip" claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
+            cd "$GITHUB_WORKSPACE"
+          else
+            echo "Executable not found, trying with .exe extension..."
+            # On Windows, the executable might have a .exe extension
+            if [ -f "build/bin/claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe" ]; then
+              echo "Found executable with .exe extension, creating zip..."
+              cd "$BUILD_BIN_DIR"
+              zip -j "$DIST_DIR/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip" claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe
+              cd "$GITHUB_WORKSPACE"
+            else
+              echo "Executable not found, listing build/bin contents:"
+              ls -la build/bin/ 2>/dev/null || echo "build/bin directory does not exist"
+            fi
+          fi
+          
           echo "Dist directory contents (after portable zip):"
           ls -la dist/ 2>/dev/null || echo "Dist directory does not exist"
 
@@ -153,36 +177,50 @@ jobs:
         run: |
           echo "Looking for installer files in dist directory:"
           ls -la dist/ || echo "dist directory does not exist"
+          
+          # Use absolute paths to avoid issues
+          WORKSPACE_DIR="$(pwd)"
+          DIST_DIR="$WORKSPACE_DIR/dist"
+          BUILD_DIR="$WORKSPACE_DIR/build"
+          
           # First check if the installer is already in dist directory
-          if [ -f "dist/claude-config-manager-setup.exe" ]; then
-            ORIGINAL_FILE="dist/claude-config-manager-setup.exe"
+          if [ -f "$DIST_DIR/claude-config-manager-setup.exe" ]; then
+            ORIGINAL_FILE="$DIST_DIR/claude-config-manager-setup.exe"
           else
             # If not, check if it's in build directory
-            ORIGINAL_FILE="build/claude-config-manager-setup.exe"
+            ORIGINAL_FILE="$BUILD_DIR/claude-config-manager-setup.exe"
             # Move it to dist directory if found
             if [ -f "$ORIGINAL_FILE" ]; then
               echo "Moving installer from build to dist directory"
-              mv "$ORIGINAL_FILE" "dist/"
+              mv "$ORIGINAL_FILE" "$DIST_DIR/"
             fi
-            ORIGINAL_FILE="dist/claude-config-manager-setup.exe"
+            ORIGINAL_FILE="$DIST_DIR/claude-config-manager-setup.exe"
           fi
           
-          NEW_FILE="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
+          NEW_FILE="$WORKSPACE_DIR/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
           if [ -f "$ORIGINAL_FILE" ]; then
             echo "Found original file, renaming to: $NEW_FILE"
             mv "$ORIGINAL_FILE" "$NEW_FILE"
           else
             echo "Installer file not found: $ORIGINAL_FILE"
             echo "Checking all files in dist directory:"
-            ls -la dist/ 2>/dev/null || echo "No dist directory found"
-            find dist -type f 2>/dev/null || echo "No files found in dist"
+            ls -la "$DIST_DIR"/ 2>/dev/null || echo "No dist directory found"
+            find "$DIST_DIR" -type f 2>/dev/null || echo "No files found in dist"
             # Also check build directory
             echo "Checking all files in build directory:"
-            ls -la build/ 2>/dev/null || echo "No build directory found"
-            find build -type f 2>/dev/null || echo "No files found in build"
+            ls -la "$BUILD_DIR"/ 2>/dev/null || echo "No build directory found"
+            find "$BUILD_DIR" -type f 2>/dev/null || echo "No files found in build"
             exit 1
           fi
 
+      - name: Ensure correct directory before upload
+        shell: bash
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Listing files to be uploaded:"
+          ls -la claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe 2>/dev/null || echo "Installer not found in current directory"
+          ls -la dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip 2>/dev/null || echo "Portable zip not found in dist directory"
+          
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
