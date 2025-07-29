@@ -8,6 +8,9 @@ CCR GitHub 仓库: [https://github.com/alexrider203/claud-code-router](https://g
 
 本项目 GitHub 仓库: [https://github.com/ayuayue/ccr-config-manager](https://github.com/ayuayue/ccr-config-manager)
 
+
+![alt text](PixPin_2025-07-29_22-53-40.png)
+
 ## 功能特性
 
 - **系统配置展示**: 显示当前 CCR 的配置信息，包括 API 密钥、代理设置等
