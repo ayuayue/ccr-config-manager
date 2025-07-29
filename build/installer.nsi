@@ -9,7 +9,10 @@
 Name "Claude Config Manager"
 InstallDir "${INSTALLDIR}"
 InstallDirRegKey HKCU "Software\${APPNAME}" ""
-OutFile "dist/claude-config-manager-setup.exe"
+OutFile "..\claude-config-manager-setup.exe"
+
+; Set working directory to build directory
+!verbose 3
 
 ; Use compression
 SetCompressor /SOLID lzma

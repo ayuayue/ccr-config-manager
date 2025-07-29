@@ -102,6 +102,8 @@ jobs:
           ls -la build/bin/
           echo "Checking if executable exists:"
           ls -la build/bin/claudeConfigManager-windows_amd64 || echo "Main executable not found"
+          echo "Dist directory contents (before NSIS):"
+          ls -la dist/ 2>/dev/null || echo "Dist directory does not exist yet"
 
       - name: Package up installer
         shell: bash
@@ -112,11 +114,25 @@ jobs:
           makensis -DVERSION=${{ steps.normalize_version.outputs.version }} build/installer.nsi
           echo "NSIS completed with exit code $?"
           
+          # Move the installer to dist directory
+          if [ -f "build/claude-config-manager-setup.exe" ]; then
+            echo "Moving installer to dist directory"
+            mv "build/claude-config-manager-setup.exe" "dist/"
+          else
+            echo "Installer not found in build directory"
+            ls -la build/ 2>/dev/null || echo "Build directory does not exist"
+          fi
+          
+          echo "Dist directory contents (after NSIS):"
+          ls -la dist/ 2>/dev/null || echo "Dist directory does not exist"
+          
           # Also create a zip of the portable executable
           echo "Creating portable version..."
           cd build/bin
           zip -j ../dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
           cd ../..
+          echo "Dist directory contents (after portable zip):"
+          ls -la dist/ 2>/dev/null || echo "Dist directory does not exist"
 
       - name: Rename installer
         shell: bash
@@ -131,7 +147,8 @@ jobs:
           else
             echo "Installer file not found: $ORIGINAL_FILE"
             echo "Checking all files in dist directory:"
-            find dist -type f 2>/dev/null || echo "No dist directory found"
+            ls -la dist/ 2>/dev/null || echo "No dist directory found"
+            find dist -type f 2>/dev/null || echo "No files found in dist"
             exit 1
           fi
 
