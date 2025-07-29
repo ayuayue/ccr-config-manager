@@ -3,7 +3,7 @@
 !define APPNAME "Claude Config Manager"
 !define COMPANYNAME "Claude Config Manager"
 !define DESCRIPTION "Configuration Manager for Claude Code Router"
-!define VERSION "1.0.1"
+!define VERSION "${VERSION}"
 !define INSTALLDIR "${APPDATA}\${APPNAME}"
 
 ; Main Install settings

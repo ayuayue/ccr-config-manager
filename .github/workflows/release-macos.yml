@@ -3,6 +3,9 @@ name: Release macOS App
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       tag:
@@ -37,11 +40,15 @@ jobs:
         id: normalize_version
         shell: bash
         run: |
-          if [ "${{ github.event.release.tag_name }}" == "" ]; then
+          if [ "${{ github.event.release.tag_name }}" != "" ]; then
+            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.inputs.tag }}" != "" ]; then
             version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
           else
-            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
+            # Handle tag push event
+            version=$(echo $GITHUB_REF | sed -e 's/refs\/tags\/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
           fi
 
@@ -72,8 +79,7 @@ jobs:
         shell: bash
         run: |
           CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} \
-          -ldflags "-X main.version=v${{ steps.normalize_version.outputs.version }}" \
-          -o claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
+          -ldflags "-X main.version=v${{ steps.normalize_version.outputs.version }}"
           echo "Wails build completed with exit code $?"
 
       - name: Debug - List build directory
@@ -90,12 +96,15 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          EXECUTABLE="build/bin/claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}"
-          if [ -f "$EXECUTABLE" ]; then
-            echo "Creating zip archive for: $EXECUTABLE"
-            zip dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.zip "$EXECUTABLE"
+          APP_PATH="build/bin/claudeConfigManager.app"
+          if [ -d "$APP_PATH" ]; then
+            echo "Creating zip archive for: $APP_PATH"
+            # Zip the entire app bundle
+            cd build/bin
+            zip -r "../../dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.zip" claudeConfigManager.app
+            cd ../..
           else
-            echo "macOS executable not found: $EXECUTABLE"
+            echo "macOS app bundle not found: $APP_PATH"
             echo "Checking all files in build/bin:"
             ls -la build/bin/
             exit 1

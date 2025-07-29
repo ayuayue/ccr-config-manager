@@ -3,6 +3,9 @@ name: Release Linux App
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       tag:
@@ -36,11 +39,15 @@ jobs:
         id: normalize_version
         shell: bash
         run: |
-          if [ "${{ github.event.release.tag_name }}" == "" ]; then
+          if [ "${{ github.event.release.tag_name }}" != "" ]; then
+            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.inputs.tag }}" != "" ]; then
             version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
           else
-            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
+            # Handle tag push event
+            version=$(echo $GITHUB_REF | sed -e 's/refs\/tags\/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
           fi
 
