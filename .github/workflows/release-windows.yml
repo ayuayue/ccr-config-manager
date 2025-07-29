@@ -100,19 +100,8 @@ jobs:
           find build/bin -type f | sort
           echo "All build/bin contents with details:"
           ls -la build/bin/
-          echo "Checking if assets directory exists:"
-          if [ -d "build/bin/assets" ]; then
-            echo "Assets directory exists:"
-            ls -la build/bin/assets/
-          else
-            echo "Assets directory does not exist"
-          fi
-          echo "Checking if files exist for NSIS:"
+          echo "Checking if executable exists:"
           ls -la build/bin/claudeConfigManager-windows_amd64 || echo "Main executable not found"
-          echo "NSIS script contents:"
-          cat build/installer.nsi
-          echo "Checking for any LICENSE references in NSIS scripts:"
-          find build -name "*.nsi" -exec grep -l -i license {} \; || echo "No license references found"
 
       - name: Package up installer
         shell: bash
@@ -122,30 +111,28 @@ jobs:
           echo "Running NSIS with VERSION=${{ steps.normalize_version.outputs.version }}"
           makensis -DVERSION=${{ steps.normalize_version.outputs.version }} build/installer.nsi
           echo "NSIS completed with exit code $?"
+          
+          # Also create a zip of the portable executable
+          echo "Creating portable version..."
+          cd build/bin
+          zip -j ../dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
+          cd ../..
 
       - name: Rename installer
         shell: bash
         run: |
           echo "Looking for installer files in dist directory:"
           ls -la dist/ || echo "dist directory does not exist"
-          ORIGINAL_FILE="dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-windows-amd64-installer.exe"
+          ORIGINAL_FILE="dist/claude-config-manager-setup.exe"
           NEW_FILE="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
           if [ -f "$ORIGINAL_FILE" ]; then
             echo "Found original file, renaming to: $NEW_FILE"
             mv "$ORIGINAL_FILE" "$NEW_FILE"
           else
-            # Try alternative file name patterns
-            echo "Original file not found: $ORIGINAL_FILE"
-            ALTERNATIVE_FILE="dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-installer.exe"
-            if [ -f "$ALTERNATIVE_FILE" ]; then
-              echo "Found alternative file, renaming to: $NEW_FILE"
-              mv "$ALTERNATIVE_FILE" "$NEW_FILE"
-            else
-              echo "Alternative file also not found: $ALTERNATIVE_FILE"
-              echo "Checking all files in dist directory:"
-              find dist -type f 2>/dev/null || echo "No dist directory found"
-              exit 1
-            fi
+            echo "Installer file not found: $ORIGINAL_FILE"
+            echo "Checking all files in dist directory:"
+            find dist -type f 2>/dev/null || echo "No dist directory found"
+            exit 1
           fi
 
       - name: Upload release asset
@@ -157,9 +144,19 @@ jobs:
             
             此版本包含Windows平台的Claude Config Manager应用程序。
             
+            ### 下载选项
+            - **安装程序**: claudeConfigManager_*_installer.exe - 标准Windows安装程序
+            - **便携版本**: claudeConfigManager_*_portable.zip - 解压即可使用的便携版本
+            
             ### 安装说明
-            1. 下载安装程序（推荐）或便携版本
-            2. 运行安装程序或直接运行可执行文件
+            **使用安装程序**:
+            1. 下载claudeConfigManager_*_installer.exe
+            2. 运行安装程序并按照提示完成安装
+            
+            **使用便携版本**:
+            1. 下载claudeConfigManager_*_portable.zip
+            2. 解压到任意目录
+            3. 直接运行claudeConfigManager-windows_amd64.exe
             
             ### 使用说明
             Claude Config Manager是一个用于管理Claude Code Router配置的图形化工具。启动应用后，您可以：
@@ -168,6 +165,7 @@ jobs:
             - 保存和加载配置文件
           files: |
             claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe
+            dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

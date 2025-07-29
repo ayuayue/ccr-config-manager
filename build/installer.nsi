@@ -1,15 +1,15 @@
 ; NSIS Installer Script for Claude Config Manager
 ; Define your application name
-!define APPNAME "Claude Config Manager"
-!define COMPANYNAME "Claude Config Manager"
+!define APPNAME "ClaudeConfigManager"
+!define COMPANYNAME "ClaudeConfigManager"
 !define DESCRIPTION "Configuration Manager for Claude Code Router"
 !define INSTALLDIR "$APPDATA\${APPNAME}"
 
 ; Main Install settings
-Name "${APPNAME}"
+Name "Claude Config Manager"
 InstallDir "${INSTALLDIR}"
 InstallDirRegKey HKCU "Software\${APPNAME}" ""
-OutFile "dist/${APPNAME}-${VERSION}-windows-amd64-installer.exe"
+OutFile "dist/claude-config-manager-setup.exe"
 
 ; Use compression
 SetCompressor /SOLID lzma
@@ -41,13 +41,6 @@ Section "Install"
   
   ; Add files
   File "bin\claudeConfigManager-windows_amd64"
-  ; Only include assets if the directory exists
-  ; File "bin\assets\*.*"
-  
-  ; Create directories
-  SetOutPath "$INSTDIR\assets"
-  ; Only include assets if the directory exists
-  ; File "bin\assets\*.*"
   
   ; Store installation folder
   WriteRegStr HKCU "Software\${APPNAME}" "" $INSTDIR
@@ -57,7 +50,7 @@ Section "Install"
   
   ; Add to Add/Remove Programs
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
-                   "DisplayName" "${APPNAME}"
+                   "DisplayName" "Claude Config Manager"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
                    "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
@@ -68,31 +61,29 @@ Section "Install"
                    "Publisher" "${COMPANYNAME}"
   
   ; Create desktop shortcut
-  CreateShortCut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\claudeConfigManager-windows_amd64"
+  CreateShortCut "$DESKTOP\Claude Config Manager.lnk" "$INSTDIR\claudeConfigManager-windows_amd64"
   
   ; Create start menu shortcut
-  CreateDirectory "$SMPROGRAMS\${APPNAME}"
-  CreateShortCut "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk" "$INSTDIR\claudeConfigManager-windows_amd64"
-  CreateShortCut "$SMPROGRAMS\${APPNAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+  CreateDirectory "$SMPROGRAMS\Claude Config Manager"
+  CreateShortCut "$SMPROGRAMS\Claude Config Manager\Claude Config Manager.lnk" "$INSTDIR\claudeConfigManager-windows_amd64"
+  CreateShortCut "$SMPROGRAMS\Claude Config Manager\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 ; Uninstaller Section
 Section "Uninstall"
   ; Remove files
   Delete "$INSTDIR\claudeConfigManager-windows_amd64"
-  Delete "$INSTDIR\assets\*.*"
-  RMDir "$INSTDIR\assets"
   
   ; Remove uninstaller
   Delete "$INSTDIR\Uninstall.exe"
   
   ; Remove desktop shortcut
-  Delete "$DESKTOP\${APPNAME}.lnk"
+  Delete "$DESKTOP\Claude Config Manager.lnk"
   
   ; Remove start menu shortcut
-  Delete "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk"
-  Delete "$SMPROGRAMS\${APPNAME}\Uninstall.lnk"
-  RMDir "$SMPROGRAMS\${APPNAME}"
+  Delete "$SMPROGRAMS\Claude Config Manager\Claude Config Manager.lnk"
+  Delete "$SMPROGRAMS\Claude Config Manager\Uninstall.lnk"
+  RMDir "$SMPROGRAMS\Claude Config Manager"
   
   ; Remove installation directory
   RMDir "$INSTDIR"
