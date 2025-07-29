@@ -105,13 +105,21 @@ jobs:
           echo "Dist directory contents (before NSIS):"
           ls -la dist/ 2>/dev/null || echo "Dist directory does not exist yet"
 
+      - name: Install NSIS
+        shell: bash
+        run: |
+          choco install nsis -y
+          echo "NSIS installed"
+
       - name: Package up installer
         shell: bash
         run: |
           # Create installer using NSIS
           mkdir -p dist
           echo "Running NSIS with VERSION=${{ steps.normalize_version.outputs.version }}"
-          makensis -DVERSION=${{ steps.normalize_version.outputs.version }} build/installer.nsi
+          cd build
+          "/c/Program Files (x86)/NSIS/makensis.exe" -DVERSION=${{ steps.normalize_version.outputs.version }} installer.nsi
+          cd ..
           echo "NSIS completed with exit code $?"
           
           # Move the installer to dist directory
@@ -121,6 +129,8 @@ jobs:
           else
             echo "Installer not found in build directory"
             ls -la build/ 2>/dev/null || echo "Build directory does not exist"
+            # List all files in build directory to help debug
+            find build -type f | sort
           fi
           
           echo "Dist directory contents (after NSIS):"
@@ -128,6 +138,10 @@ jobs:
           
           # Also create a zip of the portable executable
           echo "Creating portable version..."
+          # Install zip command on Windows
+          choco install zip -y
+          export PATH="/c/ProgramData/chocolatey/bin:$PATH"
+          
           cd build/bin
           zip -j ../dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
           cd ../..
@@ -139,7 +153,20 @@ jobs:
         run: |
           echo "Looking for installer files in dist directory:"
           ls -la dist/ || echo "dist directory does not exist"
-          ORIGINAL_FILE="dist/claude-config-manager-setup.exe"
+          # First check if the installer is already in dist directory
+          if [ -f "dist/claude-config-manager-setup.exe" ]; then
+            ORIGINAL_FILE="dist/claude-config-manager-setup.exe"
+          else
+            # If not, check if it's in build directory
+            ORIGINAL_FILE="build/claude-config-manager-setup.exe"
+            # Move it to dist directory if found
+            if [ -f "$ORIGINAL_FILE" ]; then
+              echo "Moving installer from build to dist directory"
+              mv "$ORIGINAL_FILE" "dist/"
+            fi
+            ORIGINAL_FILE="dist/claude-config-manager-setup.exe"
+          fi
+          
           NEW_FILE="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
           if [ -f "$ORIGINAL_FILE" ]; then
             echo "Found original file, renaming to: $NEW_FILE"
@@ -149,6 +176,10 @@ jobs:
             echo "Checking all files in dist directory:"
             ls -la dist/ 2>/dev/null || echo "No dist directory found"
             find dist -type f 2>/dev/null || echo "No files found in dist"
+            # Also check build directory
+            echo "Checking all files in build directory:"
+            ls -la build/ 2>/dev/null || echo "No build directory found"
+            find build -type f 2>/dev/null || echo "No files found in build"
             exit 1
           fi
 
