@@ -100,6 +100,13 @@ jobs:
           find build/bin -type f | sort
           echo "All build/bin contents with details:"
           ls -la build/bin/
+          echo "Checking if assets directory exists:"
+          if [ -d "build/bin/assets" ]; then
+            echo "Assets directory exists:"
+            ls -la build/bin/assets/
+          else
+            echo "Assets directory does not exist"
+          fi
           echo "Checking if files exist for NSIS:"
           ls -la build/bin/claudeConfigManager-windows_amd64 || echo "Main executable not found"
           echo "NSIS script contents:"

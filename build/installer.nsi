@@ -41,11 +41,13 @@ Section "Install"
   
   ; Add files
   File "bin\claudeConfigManager-windows_amd64"
-  File "bin\assets\*.*"
+  ; Only include assets if the directory exists
+  ; File "bin\assets\*.*"
   
   ; Create directories
   SetOutPath "$INSTDIR\assets"
-  File "bin\assets\*.*"
+  ; Only include assets if the directory exists
+  ; File "bin\assets\*.*"
   
   ; Store installation folder
   WriteRegStr HKCU "Software\${APPNAME}" "" $INSTDIR
