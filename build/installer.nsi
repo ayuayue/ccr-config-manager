@@ -3,7 +3,7 @@
 !define APPNAME "Claude Config Manager"
 !define COMPANYNAME "Claude Config Manager"
 !define DESCRIPTION "Configuration Manager for Claude Code Router"
-!define INSTALLDIR "${APPDATA}\${APPNAME}"
+!define INSTALLDIR "$APPDATA\${APPNAME}"
 
 ; Main Install settings
 Name "${APPNAME}"
@@ -25,7 +25,6 @@ RequestExecutionLevel user
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -41,12 +40,12 @@ Section "Install"
   SetOutPath "$INSTDIR"
   
   ; Add files
-  File "..\build\bin\claudeConfigManager-windows-amd64.exe"
-  File "..\build\bin\assets\*.*"
+  File "build\bin\claudeConfigManager-windows-amd64.exe"
+  File "build\bin\assets\*.*"
   
   ; Create directories
   SetOutPath "$INSTDIR\assets"
-  File "..\build\bin\assets\*.*"
+  File "build\bin\assets\*.*"
   
   ; Store installation folder
   WriteRegStr HKCU "Software\${APPNAME}" "" $INSTDIR
