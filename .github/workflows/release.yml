@@ -127,6 +127,23 @@ jobs:
             app-windows-installer/*.exe
             app-macos-amd64/*
             app-macos-arm64/*
+          body: |
+            ## 发布说明
+            
+            本版本包含以下平台的构建产物：
+            
+            ### Linux
+            - `app-linux-amd64/*` - Linux x86_64版本
+            
+            ### Windows
+            - `app-windows-amd64/*` - Windows x86_64版本
+            - `app-windows-installer/*.exe` - Windows安装程序
+            
+            ### macOS
+            - `app-macos-amd64/*` - macOS Intel版本
+            - `app-macos-arm64/*` - macOS M1/M2芯片版本
+            
+            请根据您的操作系统和架构选择相应的版本下载。
           draft: true
           prerelease: false
         env:
