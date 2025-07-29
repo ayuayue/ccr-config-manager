@@ -70,7 +70,8 @@ jobs:
         run: |
           CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} \
           -ldflags "-X main.version=v${{ steps.normalize_version.outputs.version }}" \
-          -o claudeConfigManager
+          -o claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
+          echo "Wails build completed with exit code $?"
 
       - name: Debug - List build directory
         shell: bash
@@ -79,6 +80,8 @@ jobs:
           find build -type f | sort
           echo "Bin directory contents:"
           find build/bin -type f | sort
+          echo "All build/bin contents with details:"
+          ls -la build/bin/
 
       - name: Package up installer
         shell: bash

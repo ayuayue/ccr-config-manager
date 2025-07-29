@@ -71,7 +71,8 @@ jobs:
         run: |
           CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} \
           -ldflags "-X main.version=v${{ steps.normalize_version.outputs.version }}" \
-          -o claudeConfigManager
+          -o claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
+          echo "Wails build completed with exit code $?"
 
       - name: Debug - List build directory
         shell: bash
@@ -80,17 +81,21 @@ jobs:
           find build -type f | sort
           echo "Bin directory contents:"
           find build/bin -type f | sort
+          echo "All build/bin contents with details:"
+          ls -la build/bin/
 
       - name: Create zip archive
         shell: bash
         run: |
           mkdir -p dist
-          # Find and zip the macOS executable
-          EXECUTABLE=$(find build/bin -name "claudeConfigManager-darwin-*" -type f -print -quit)
-          if [ -n "$EXECUTABLE" ]; then
+          EXECUTABLE="build/bin/claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}"
+          if [ -f "$EXECUTABLE" ]; then
+            echo "Creating zip archive for: $EXECUTABLE"
             zip dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.zip "$EXECUTABLE"
           else
-            echo "No macOS executable found"
+            echo "macOS executable not found: $EXECUTABLE"
+            echo "Checking all files in build/bin:"
+            ls -la build/bin/
             exit 1
           fi
 
