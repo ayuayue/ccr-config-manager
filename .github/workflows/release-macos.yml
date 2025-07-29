@@ -19,6 +19,8 @@ jobs:
         platform:
           - darwin/amd64
           - darwin/arm64
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout source code
@@ -103,6 +105,21 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.normalize_version.outputs.version }}
+          body: |
+            ## macOS发行说明
+            
+            此版本包含macOS平台的Claude Config Manager应用程序。
+            
+            ### 安装说明
+            1. 下载对应的zip文件
+            2. 解压并将其拖拽到Applications文件夹
+            3. 首次运行时可能需要在系统偏好设置中允许应用运行
+            
+            ### 使用说明
+            Claude Config Manager是一个用于管理Claude Code Router配置的图形化工具。启动应用后，您可以：
+            - 配置API密钥和代理设置
+            - 管理模型提供商和路由规则
+            - 保存和加载配置文件
           files: |
             dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
