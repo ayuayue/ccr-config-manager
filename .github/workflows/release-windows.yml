@@ -149,15 +149,19 @@ jobs:
           DIST_DIR="$(pwd)/dist"
           BUILD_BIN_DIR="$(pwd)/build/bin"
           
-          # On Windows, executables always have .exe extension
-          EXECUTABLE_NAME="claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe"
+          # Wails on Windows creates executable without .exe extension
+          EXECUTABLE_NAME="claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}"
           ZIP_FILE_NAME="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip"
+          PORTABLE_EXE_NAME="claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe"
           
-          # Check if the executable exists with .exe extension
+          # Check if the executable exists (without .exe extension)
           if [ -f "build/bin/$EXECUTABLE_NAME" ]; then
-            echo "Found executable with .exe extension, creating zip..."
+            echo "Found executable (without .exe extension), creating zip with .exe extension..."
             cd "$BUILD_BIN_DIR"
-            zip -j "$DIST_DIR/$ZIP_FILE_NAME" "$EXECUTABLE_NAME"
+            # Create zip with the executable renamed to have .exe extension
+            cp "$EXECUTABLE_NAME" "$PORTABLE_EXE_NAME"
+            zip -j "$DIST_DIR/$ZIP_FILE_NAME" "$PORTABLE_EXE_NAME"
+            rm "$PORTABLE_EXE_NAME"
             cd "$GITHUB_WORKSPACE"
             echo "Created portable zip with correct .exe extension"
           else

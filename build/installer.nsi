@@ -42,8 +42,9 @@ RequestExecutionLevel user
 Section "Install"
   SetOutPath "$INSTDIR"
   
-  ; Add files (with .exe extension for Windows)
-  File "bin\claudeConfigManager-windows_amd64.exe"
+  ; Add files (Wails creates executable without .exe extension, but we'll install it with .exe extension)
+  File "bin\claudeConfigManager-windows_amd64"
+  Rename "$INSTDIR\claudeConfigManager-windows_amd64" "$INSTDIR\claudeConfigManager-windows_amd64.exe"
   
   ; Store installation folder
   WriteRegStr HKCU "Software\${APPNAME}" "" $INSTDIR
