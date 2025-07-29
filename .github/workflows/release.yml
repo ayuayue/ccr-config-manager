@@ -52,6 +52,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-0 libwebkit2gtk-4.1-dev
 
+      - name: Install NSIS (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          choco install nsis
+
       - name: Install frontend dependencies
         run: |
           cd frontend
@@ -60,6 +65,14 @@ jobs:
       - name: Build application
         run: |
           wails build -platform ${{ matrix.platform }}/${{ matrix.arch }} -o ${{ matrix.asset_name }}
+
+      - name: Create NSIS installer (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          mkdir -p dist
+          cp build/bin/${{ matrix.asset_name }} dist/
+          cp -r build/bin/assets dist/ || true
+          makensis build/installer.nsi
 
       - name: Package assets (Linux)
         if: matrix.platform == 'linux'
@@ -96,6 +109,7 @@ jobs:
             build/bin/${{ matrix.asset_name }}*
             ${{ matrix.asset_name }}.tar.gz
             ${{ matrix.asset_name }}.zip
+            dist/*.exe
 
   release:
     needs: build

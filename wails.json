@@ -9,5 +9,20 @@
   "author": {
     "name": "caoayu",
     "email": "1401262639@qq.com"
+  },
+  "info": {
+    "companyName": "Claude Config Manager",
+    "productName": "Claude Config Manager",
+    "productVersion": "1.0.1",
+    "copyright": "Copyright © 2025 caoayu",
+    "comments": "Claude Code Router Configuration Manager"
+  },
+  "build:nsis": {
+    "enabled": true,
+    "compiler": "makensis",
+    "script": "build/installer.nsi",
+    "cliFlags": [
+      "-V3"
+    ]
   }
 }
