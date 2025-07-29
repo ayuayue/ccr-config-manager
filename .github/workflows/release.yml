@@ -89,13 +89,18 @@ jobs:
           echo "Installing GTK3 dependencies..."
           sudo apt-get install -y libgtk-3-dev
           
-          echo "Installing WebKit2GTK 4.0 dependencies..."
-          sudo apt-get install -y libwebkit2gtk-4.0-dev
+          echo "Installing WebKit2GTK dependencies (trying multiple versions)..."
+          sudo apt-get install -y libwebkit2gtk-4.1-dev || \
+          sudo apt-get install -y libwebkit2gtk-4.0-dev || \
+          sudo apt-get install -y libwebkit2gtk-dev || \
+          echo "Failed to install any webkit2gtk package"
           
           echo "Verifying installations..."
           echo "Checking installed packages:"
           pkg-config --modversion gtk+-3.0 || echo "gtk+-3.0 not found"
-          pkg-config --modversion webkit2gtk-4.0 || echo "webkit2gtk-4.0 not found"
+          pkg-config --modversion webkit2gtk-4.1 || echo "webkit2gtk-4.1 not found" || \
+          pkg-config --modversion webkit2gtk-4.0 || echo "webkit2gtk-4.0 not found" || \
+          pkg-config --modversion webkit2gtk || echo "webkit2gtk not found"
           
           echo "Package config paths:"
           pkg-config --variable pc_path pkg-config
