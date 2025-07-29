@@ -69,50 +69,16 @@ jobs:
           echo "Matrix platform: ${{ matrix.platform }}"
           
       - name: Install system dependencies (Linux)
-        if: contains(matrix.os, 'ubuntu')
-        timeout-minutes: 10
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          echo "Starting system dependencies installation..."
-          echo "Runner OS: ${{ matrix.os }}"
-          echo "Runner platform: ${{ matrix.platform }}"
-          echo "Current user: $(whoami)"
-          echo "Current directory: $(pwd)"
-          echo "Available disk space:"
-          df -h
-          
-          echo "Updating package list..."
-          sudo apt-get update -y
-          
-          echo "Installing build tools..."
-          sudo apt-get install -y build-essential pkg-config
-          
-          echo "Installing GTK3 dependencies..."
-          sudo apt-get install -y libgtk-3-dev
-          
-          echo "Installing WebKit2GTK dependencies..."
-          # 首先尝试安装webkit2gtk-4.0（Wails需要的特定版本）
-          if ! sudo apt-get install -y libwebkit2gtk-4.0-dev; then
-            echo "webkit2gtk-4.0 not available, trying webkit2gtk-4.1..."
-            sudo apt-get install -y libwebkit2gtk-4.1-dev || \
-            sudo apt-get install -y libwebkit2gtk-dev || \
-            echo "Failed to install any webkit2gtk package"
-          fi
-          
-          echo "Verifying installations..."
-          echo "Checking installed packages:"
-          pkg-config --modversion gtk+-3.0 || echo "gtk+-3.0 not found"
-          pkg-config --modversion webkit2gtk-4.1 || echo "webkit2gtk-4.1 not found" || \
-          pkg-config --modversion webkit2gtk-4.0 || echo "webkit2gtk-4.0 not found" || \
-          pkg-config --modversion webkit2gtk || echo "webkit2gtk not found"
-          
-          echo "Setting up environment variables..."
-          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/pkgconfig" >> $GITHUB_ENV
-          
-          echo "Package config paths:"
-          pkg-config --variable pc_path pkg-config
-          
-          echo "System dependencies installation completed."
-    
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-dev
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
