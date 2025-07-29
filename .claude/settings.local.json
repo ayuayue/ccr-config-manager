@@ -18,7 +18,8 @@
       "Bash(go build:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "WebFetch(domain:docs.github.com)"
     ],
     "deny": []
   }
