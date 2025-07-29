@@ -1,0 +1,92 @@
+name: Release Windows App
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  release:
+    name: Release Windows App
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform:
+          - windows/amd64
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Normalize platform tag
+        id: normalize_platform
+        shell: bash
+        run: |
+          tag=$(echo ${{ matrix.platform }} | sed -e 's/\//_/g')
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Normalize version tag
+        id: normalize_version
+        shell: bash
+        run: |
+          if [ "${{ github.event.release.tag_name }}" == "" ]; then
+            version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          else
+            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Install wails
+        shell: bash
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend assets
+        shell: bash
+        run: npm install
+
+      - name: Build wails app for Windows
+        shell: bash
+        run: |
+          CGO_ENABLED=1 wails build -platform ${{ matrix.platform }} \
+          -ldflags "-X main.version=v${{ steps.normalize_version.outputs.version }}" \
+          -o claudeConfigManager
+
+      - name: Package up installer
+        shell: bash
+        run: |
+          # Create installer using NSIS
+          mkdir -p dist
+          makensis build/installer.nsi
+
+      - name: Rename installer
+        shell: bash
+        run: |
+          mv "dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-windows-amd64-installer.exe" \
+             "claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.normalize_version.outputs.version }}
+          files: |
+            claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
