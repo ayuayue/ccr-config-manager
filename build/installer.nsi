@@ -40,7 +40,7 @@ Section "Install"
   SetOutPath "$INSTDIR"
   
   ; Add files
-  File "build\bin\claudeConfigManager-windows_amd64.exe"
+  File "build\bin\claudeConfigManager-windows_amd64"
   File "build\bin\assets\*.*"
   
   ; Create directories
@@ -59,25 +59,25 @@ Section "Install"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
                    "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
-                   "DisplayIcon" "$INSTDIR\claudeConfigManager-windows_amd64.exe,0"
+                   "DisplayIcon" "$INSTDIR\claudeConfigManager-windows_amd64,0"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
                    "DisplayVersion" "${VERSION}"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" \
                    "Publisher" "${COMPANYNAME}"
   
   ; Create desktop shortcut
-  CreateShortCut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\claudeConfigManager-windows_amd64.exe"
+  CreateShortCut "$DESKTOP\${APPNAME}.lnk" "$INSTDIR\claudeConfigManager-windows_amd64"
   
   ; Create start menu shortcut
   CreateDirectory "$SMPROGRAMS\${APPNAME}"
-  CreateShortCut "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk" "$INSTDIR\claudeConfigManager-windows_amd64.exe"
+  CreateShortCut "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk" "$INSTDIR\claudeConfigManager-windows_amd64"
   CreateShortCut "$SMPROGRAMS\${APPNAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 SectionEnd
 
 ; Uninstaller Section
 Section "Uninstall"
   ; Remove files
-  Delete "$INSTDIR\claudeConfigManager-windows_amd64.exe"
+  Delete "$INSTDIR\claudeConfigManager-windows_amd64"
   Delete "$INSTDIR\assets\*.*"
   RMDir "$INSTDIR\assets"
   
