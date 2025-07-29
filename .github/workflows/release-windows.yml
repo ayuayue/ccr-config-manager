@@ -72,6 +72,14 @@ jobs:
           -ldflags "-X main.version=v${{ steps.normalize_version.outputs.version }}" \
           -o claudeConfigManager
 
+      - name: Debug - List build directory
+        shell: bash
+        run: |
+          echo "Build directory contents:"
+          find build -type f | sort
+          echo "Bin directory contents:"
+          find build/bin -type f | sort
+
       - name: Package up installer
         shell: bash
         run: |
@@ -82,8 +90,15 @@ jobs:
       - name: Rename installer
         shell: bash
         run: |
-          mv "dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-windows-amd64-installer.exe" \
-             "claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
+          ORIGINAL_FILE="dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-windows-amd64-installer.exe"
+          NEW_FILE="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
+          if [ -f "$ORIGINAL_FILE" ]; then
+            mv "$ORIGINAL_FILE" "$NEW_FILE"
+          else
+            echo "Installer file not found: $ORIGINAL_FILE"
+            ls -la dist/
+            exit 1
+          fi
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
@@ -92,3 +107,5 @@ jobs:
           files: |
             claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe
           token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
