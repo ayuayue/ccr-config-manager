@@ -55,13 +55,26 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+          # Wails v2 推荐的依赖
+          sudo apt-get install -y \
+            build-essential \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            libwebkit2gtk-4.0-dev || \
+          sudo apt-get install -y \
+            build-essential \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev || \
+          sudo apt-get install -y \
+            build-essential \
+            libgtk-3-dev
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           choco install nsis -y
-          echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
+          echo "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
 
       - name: Build application
         run: ${{ matrix.build_command }}
@@ -72,7 +85,7 @@ jobs:
           wails build -nsis -platform windows/amd64
 
       - name: Upload regular build artifact
-        uses: actions/upload-artifact@v4  # 更新到 v4
+        uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.asset_name }}
           path: |
@@ -81,7 +94,7 @@ jobs:
 
       - name: Upload Windows NSIS installer (Windows only)
         if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4  # 更新到 v4
+        uses: actions/upload-artifact@v4
         with:
           name: app-windows-installer
           path: |
@@ -96,7 +109,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4  # 更新到 v4
+        uses: actions/download-artifact@v4
 
       - name: List downloaded files
         run: |
