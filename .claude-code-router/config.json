@@ -1,0 +1,20 @@
+{
+  "APIKEY": "test-key",
+  "PROXY_URL": "http://proxy.example.com",
+  "HOST": "localhost",
+  "API_TIMEOUT_MS": "600000",
+  "LOG": "true",
+  "Providers": [
+    {
+      "name": "test-provider",
+      "api_base_url": "http://api.example.com",
+      "api_key": "provider-key",
+      "models": ["model1", "model2"]
+    }
+  ],
+  "Router": {
+    "default": "test-provider,model1",
+    "background": "test-provider,model2",
+    "longContextThreshold": "90000"
+  }
+}
