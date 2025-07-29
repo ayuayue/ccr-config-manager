@@ -45,10 +45,19 @@ jobs:
           elif [ "${{ github.event.inputs.tag }}" != "" ]; then
             version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
-          else
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             # Handle tag push event
             version=$(echo $GITHUB_REF | sed -e 's/refs\/tags\/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
+          else
+            # Default version or extract from ref if it looks like a tag
+            if [[ "$GITHUB_REF" == v* ]]; then
+              version=$(echo $GITHUB_REF | sed -e 's/v//g')
+              echo "version=$version" >> "$GITHUB_OUTPUT"
+            else
+              # Fallback to a default version
+              echo "version=1.0.0" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Setup Go

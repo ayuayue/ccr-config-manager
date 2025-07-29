@@ -45,10 +45,19 @@ jobs:
           elif [ "${{ github.event.inputs.tag }}" != "" ]; then
             version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
-          else
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             # Handle tag push event
             version=$(echo $GITHUB_REF | sed -e 's/refs\/tags\/v//g')
             echo "version=$version" >> "$GITHUB_OUTPUT"
+          else
+            # Default version or extract from ref if it looks like a tag
+            if [[ "$GITHUB_REF" == v* ]]; then
+              version=$(echo $GITHUB_REF | sed -e 's/v//g')
+              echo "version=$version" >> "$GITHUB_OUTPUT"
+            else
+              # Fallback to a default version
+              echo "version=1.0.0" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Setup Go
@@ -91,30 +100,41 @@ jobs:
           find build/bin -type f | sort
           echo "All build/bin contents with details:"
           ls -la build/bin/
+          echo "NSIS script contents:"
+          cat build/installer.nsi
+          echo "Checking for any LICENSE references in NSIS scripts:"
+          find build -name "*.nsi" -exec grep -l -i license {} \; || echo "No license references found"
 
       - name: Package up installer
         shell: bash
         run: |
           # Create installer using NSIS
           mkdir -p dist
+          echo "Running NSIS with VERSION=${{ steps.normalize_version.outputs.version }}"
           makensis -DVERSION=${{ steps.normalize_version.outputs.version }} build/installer.nsi
+          echo "NSIS completed with exit code $?"
 
       - name: Rename installer
         shell: bash
         run: |
+          echo "Looking for installer files in dist directory:"
+          ls -la dist/ || echo "dist directory does not exist"
           ORIGINAL_FILE="dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-windows-amd64-installer.exe"
           NEW_FILE="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_installer.exe"
           if [ -f "$ORIGINAL_FILE" ]; then
+            echo "Found original file, renaming to: $NEW_FILE"
             mv "$ORIGINAL_FILE" "$NEW_FILE"
           else
             # Try alternative file name patterns
+            echo "Original file not found: $ORIGINAL_FILE"
             ALTERNATIVE_FILE="dist/Claude Config Manager-${{ steps.normalize_version.outputs.version }}-installer.exe"
             if [ -f "$ALTERNATIVE_FILE" ]; then
+              echo "Found alternative file, renaming to: $NEW_FILE"
               mv "$ALTERNATIVE_FILE" "$NEW_FILE"
             else
-              echo "Installer file not found: $ORIGINAL_FILE"
-              echo "Also checked: $ALTERNATIVE_FILE"
-              ls -la dist/
+              echo "Alternative file also not found: $ALTERNATIVE_FILE"
+              echo "Checking all files in dist directory:"
+              find dist -type f 2>/dev/null || echo "No dist directory found"
               exit 1
             fi
           fi

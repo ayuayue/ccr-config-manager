@@ -22,7 +22,8 @@
       "WebFetch(domain:docs.github.com)",
       "Bash(yamllint:*)",
       "Bash(find:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
