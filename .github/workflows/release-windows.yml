@@ -100,6 +100,8 @@ jobs:
           find build/bin -type f | sort
           echo "All build/bin contents with details:"
           ls -la build/bin/
+          echo "Checking if files exist for NSIS:"
+          ls -la build/bin/claudeConfigManager-windows_amd64 || echo "Main executable not found"
           echo "NSIS script contents:"
           cat build/installer.nsi
           echo "Checking for any LICENSE references in NSIS scripts:"

@@ -40,12 +40,12 @@ Section "Install"
   SetOutPath "$INSTDIR"
   
   ; Add files
-  File "build\bin\claudeConfigManager-windows_amd64"
-  File "build\bin\assets\*.*"
+  File "bin\claudeConfigManager-windows_amd64"
+  File "bin\assets\*.*"
   
   ; Create directories
   SetOutPath "$INSTDIR\assets"
-  File "build\bin\assets\*.*"
+  File "bin\assets\*.*"
   
   ; Store installation folder
   WriteRegStr HKCU "Software\${APPNAME}" "" $INSTDIR
