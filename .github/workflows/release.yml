@@ -10,9 +10,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-20.04, windows-latest, macos-latest]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             platform: linux
             asset_name: linux-amd64
             build_command: "wails build -platform linux/amd64"
@@ -52,23 +52,22 @@ jobs:
         run: npm install
 
       - name: Install system dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt-get update
           # 安装基础构建工具
           sudo apt-get install -y build-essential pkg-config
           # 安装 GTK3 依赖
           sudo apt-get install -y libgtk-3-dev
-          # 尝试不同的 webkit2gtk 版本
-          sudo apt-get install -y libwebkit2gtk-4.1-dev || \
-          sudo apt-get install -y libwebkit2gtk-4.0-dev || \
-          sudo apt-get install -y libwebkit2gtk-dev
-    
-      - name: Verify dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
+          # 安装 WebKit2GTK 4.0 依赖
+          sudo apt-get install -y libwebkit2gtk-4.0-dev
+          # 验证安装
+          echo "Checking installed packages:"
           pkg-config --modversion gtk+-3.0
-          pkg-config --modversion webkit2gtk-4.1 || pkg-config --modversion webkit2gtk-4.0 || echo "No webkit2gtk found"
+          pkg-config --modversion webkit2gtk-4.0
+          echo "Package config paths:"
+          pkg-config --variable pc_path pkg-config
+    
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
@@ -121,7 +120,7 @@ jobs:
           files: |
             app-linux-amd64/*
             app-windows-amd64/*
-            app-windows-installer/*
+            app-windows-installer/*.exe
             app-macos-amd64/*
           draft: true
           prerelease: false
