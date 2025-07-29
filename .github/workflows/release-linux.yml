@@ -67,7 +67,9 @@ jobs:
 
       - name: Build frontend assets
         shell: bash
-        run: npm install
+        run: |
+          cd frontend
+          npm install
 
       - name: Build wails app for Linux
         shell: bash
@@ -80,8 +82,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          tar -czvf dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.tar.gz \
-              -C build/bin claudeConfigManager-linux-amd64
+          # Find the Linux executable and create archive
+          find build/bin -name "claudeConfigManager-linux-*" -type f -exec tar -czvf dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.tar.gz {} \;
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1

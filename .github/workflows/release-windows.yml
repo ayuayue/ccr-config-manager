@@ -61,7 +61,9 @@ jobs:
 
       - name: Build frontend assets
         shell: bash
-        run: npm install
+        run: |
+          cd frontend
+          npm install
 
       - name: Build wails app for Windows
         shell: bash

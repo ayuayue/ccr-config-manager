@@ -20,7 +20,8 @@
       "Bash(git push:*)",
       "Bash(git tag:*)",
       "WebFetch(domain:docs.github.com)",
-      "Bash(yamllint:*)"
+      "Bash(yamllint:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

@@ -62,7 +62,9 @@ jobs:
 
       - name: Build frontend assets
         shell: bash
-        run: npm install
+        run: |
+          cd frontend
+          npm install
 
       - name: Build wails app for macOS
         shell: bash
@@ -75,11 +77,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          # Create a folder with the app and zip it
-          mkdir -p "ClaudeConfigManager-${{ steps.normalize_version.outputs.version }}-${{ steps.normalize_platform.outputs.tag }}"
-          cp -r build/bin/claudeConfigManager-darwin-* "ClaudeConfigManager-${{ steps.normalize_version.outputs.version }}-${{ steps.normalize_platform.outputs.tag }}/"
-          zip -r dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.zip \
-              "ClaudeConfigManager-${{ steps.normalize_version.outputs.version }}-${{ steps.normalize_platform.outputs.tag }}"
+          # Find and zip the macOS executable
+          find build/bin -name "claudeConfigManager-darwin-*" -type f -exec zip dist/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}.zip {} \;
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
