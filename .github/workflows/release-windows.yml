@@ -149,24 +149,22 @@ jobs:
           DIST_DIR="$(pwd)/dist"
           BUILD_BIN_DIR="$(pwd)/build/bin"
           
-          # Check if the executable exists
-          if [ -f "build/bin/claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}" ]; then
-            echo "Found executable, creating zip..."
+          # On Windows, executables always have .exe extension
+          EXECUTABLE_NAME="claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe"
+          ZIP_FILE_NAME="claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip"
+          
+          # Check if the executable exists with .exe extension
+          if [ -f "build/bin/$EXECUTABLE_NAME" ]; then
+            echo "Found executable with .exe extension, creating zip..."
             cd "$BUILD_BIN_DIR"
-            zip -j "$DIST_DIR/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip" claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}
+            zip -j "$DIST_DIR/$ZIP_FILE_NAME" "$EXECUTABLE_NAME"
             cd "$GITHUB_WORKSPACE"
+            echo "Created portable zip with correct .exe extension"
           else
-            echo "Executable not found, trying with .exe extension..."
-            # On Windows, the executable might have a .exe extension
-            if [ -f "build/bin/claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe" ]; then
-              echo "Found executable with .exe extension, creating zip..."
-              cd "$BUILD_BIN_DIR"
-              zip -j "$DIST_DIR/claudeConfigManager_${{ steps.normalize_version.outputs.version }}_${{ steps.normalize_platform.outputs.tag }}_portable.zip" claudeConfigManager-${{ steps.normalize_platform.outputs.tag }}.exe
-              cd "$GITHUB_WORKSPACE"
-            else
-              echo "Executable not found, listing build/bin contents:"
-              ls -la build/bin/ 2>/dev/null || echo "build/bin directory does not exist"
-            fi
+            echo "Executable not found, listing build/bin contents:"
+            ls -la build/bin/ 2>/dev/null || echo "build/bin directory does not exist"
+            # List all files to help debug
+            find build/bin -type f 2>/dev/null || echo "No files found in build/bin"
           fi
           
           echo "Dist directory contents (after portable zip):"
