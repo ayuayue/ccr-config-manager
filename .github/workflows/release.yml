@@ -34,6 +34,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Debug matrix values
+        run: |
+          echo "Matrix OS: ${{ matrix.os }}"
+          echo "Matrix platform: ${{ matrix.platform }}"
+          echo "Matrix asset_name: ${{ matrix.asset_name }}"
+          echo "Matrix build_command: ${{ matrix.build_command }}"
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
