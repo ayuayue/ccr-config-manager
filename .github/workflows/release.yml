@@ -56,23 +56,36 @@ jobs:
 
       - name: Install system dependencies (Linux)
         if: contains(matrix.os, 'ubuntu')
+        timeout-minutes: 10
         run: |
           echo "Starting system dependencies installation..."
           echo "Runner OS: ${{ matrix.os }}"
           echo "Runner platform: ${{ matrix.platform }}"
-          sudo apt-get update
-          # 安装基础构建工具
+          echo "Current user: $(whoami)"
+          echo "Current directory: $(pwd)"
+          echo "Available disk space:"
+          df -h
+          
+          echo "Updating package list..."
+          sudo apt-get update -y
+          
+          echo "Installing build tools..."
           sudo apt-get install -y build-essential pkg-config
-          # 安装 GTK3 依赖
+          
+          echo "Installing GTK3 dependencies..."
           sudo apt-get install -y libgtk-3-dev
-          # 安装 WebKit2GTK 4.0 依赖
+          
+          echo "Installing WebKit2GTK 4.0 dependencies..."
           sudo apt-get install -y libwebkit2gtk-4.0-dev
-          # 验证安装
+          
+          echo "Verifying installations..."
           echo "Checking installed packages:"
           pkg-config --modversion gtk+-3.0 || echo "gtk+-3.0 not found"
           pkg-config --modversion webkit2gtk-4.0 || echo "webkit2gtk-4.0 not found"
+          
           echo "Package config paths:"
           pkg-config --variable pc_path pkg-config
+          
           echo "System dependencies installation completed."
     
 
