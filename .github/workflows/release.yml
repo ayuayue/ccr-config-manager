@@ -3,8 +3,8 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*.*.*'  # 当推送标签时触发（如 v1.0.0）
-  workflow_dispatch:  # 允许手动触发
+      - 'v*.*.*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -72,7 +72,7 @@ jobs:
           wails build -nsis -platform windows/amd64
 
       - name: Upload regular build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # 更新到 v4
         with:
           name: app-${{ matrix.asset_name }}
           path: |
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload Windows NSIS installer (Windows only)
         if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # 更新到 v4
         with:
           name: app-windows-installer
           path: |
@@ -96,7 +96,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4  # 更新到 v4
 
       - name: List downloaded files
         run: |
