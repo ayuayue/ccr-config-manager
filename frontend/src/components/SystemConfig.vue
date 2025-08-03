@@ -1,167 +1,179 @@
 <template>
   <div class="system-config-container">
-
-    <div v-if="loading" class="loading">
-      正在加载配置...
-    </div>
-    
-    <div v-else-if="error" class="error">
-      {{ error }}
-    </div>
-    
-    <div v-else-if="config" class="config-display">
-      <!-- 标签页导航 -->
-      <div class="tabs">
-        <button 
-          v-for="tab in tabs" 
-          :key="tab.id" 
-          :class="['tab', { active: activeTab === tab.id }]"
-          @click="activeTab = tab.id"
-        >
-          {{ tab.name }}
-        </button>
+    <el-card v-if="loading" shadow="never">
+      <div class="loading">
+        正在加载配置...
       </div>
-      
-      <!-- 标签页内容 -->
-      <div class="tab-content">
-        <!-- 核心配置标签页 -->
-        <div v-show="activeTab === 'core'" class="tab-pane">
-          <div class="config-grid">
-            <div class="config-group">
-              <h3>核心配置</h3>
-              <div class="config-table">
-                <div class="config-row">
-                  <span class="label">API Key:</span>
-                  <span class="value" v-if="config.APIKEY">
-                    <span :class="{ masked: !showApiKeys['main'] }">{{ getDisplayApiKey(config.APIKEY, !showApiKeys['main']) }}</span>
-                    <button class="toggle-btn" @click="toggleApiKeyVisibility('main')">
-                      {{ showApiKeys['main'] ? '隐藏' : '显示' }}
-                    </button>
-                  </span>
-                  <span class="value" v-else>未设置</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">代理设置:</span>
-                  <span class="value">{{ config.PROXY_URL || '未设置' }}</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">主机地址:</span>
-                  <span class="value">{{ config.HOST || '默认 (127.0.0.1)' }}</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">超时时间:</span>
-                  <span class="value">{{ config.API_TIMEOUT_MS || 600000 }} 毫秒</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">日志记录:</span>
-                  <span class="value">{{ config.LOG ? '已启用' : '已禁用' }}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="config-group">
-              <h3>路由配置</h3>
-              <div class="config-table">
-                <div class="config-row">
-                  <span class="label">默认路由:</span>
-                  <span class="value">{{ config.Router?.default || '未设置' }}</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">后台任务:</span>
-                  <span class="value">{{ config.Router?.background || '未设置' }}</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">推理任务:</span>
-                  <span class="value">{{ config.Router?.think || '未设置' }}</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">长上下文:</span>
-                  <span class="value">{{ config.Router?.longContext || '未设置' }}</span>
-                </div>
-                
-                <div class="config-row">
-                  <span class="label">网络搜索:</span>
-                  <span class="value">{{ config.Router?.webSearch || '未设置' }}</span>
-                </div>
-              </div>
+    </el-card>
+    
+    <el-card v-else-if="error" shadow="never">
+      <div class="error">
+        {{ error }}
+      </div>
+    </el-card>
+    
+    <div v-else-if="config">
+      <el-row :gutter="10">
+        <el-col :span="3">
+          <el-menu
+            :default-active="activeTab"
+            class="el-menu-vertical-demo"
+            @select="activeTab = $event"
+          >
+            <el-menu-item index="core">核心配置</el-menu-item>
+            <el-menu-item index="providers">提供商配置</el-menu-item>
+            <el-menu-item index="full">完整配置</el-menu-item>
+          </el-menu>
+        </el-col>
+        
+        <el-col :span="20">
+          <div v-if="activeTab === 'core'">
+            <div class="config-grid">
+              <el-card class="config-card">
+                <template #header>
+                  <div class="card-header">
+                    <span>核心配置</span>
+                  </div>
+                </template>
+                <el-descriptions :column="1" >
+                  <el-descriptions-item label="API Key">
+                    <span v-if="config.APIKEY">
+                      <span :class="{ masked: !showApiKeys['main'] }">{{ getDisplayApiKey(config.APIKEY, !showApiKeys['main']) }}</span>
+                      <el-button size="small" @click="toggleApiKeyVisibility('main')">
+                        {{ showApiKeys['main'] ? '隐藏' : '显示' }}
+                      </el-button>
+                    </span>
+                    <span v-else>未设置</span>
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="代理设置">
+                    {{ config.PROXY_URL || '未设置' }}
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="主机地址">
+                    {{ config.HOST || '默认 (127.0.0.1)' }}
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="超时时间">
+                    {{ config.API_TIMEOUT_MS || 600000 }} 毫秒
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="日志记录">
+                    <el-tag :type="config.LOG ? 'success' : 'info'">{{ config.LOG ? '已启用' : '已禁用' }}</el-tag>
+                  </el-descriptions-item>
+                </el-descriptions>
+              </el-card>
+              
+              <el-card class="config-card">
+                <template #header>
+                  <div class="card-header">
+                    <span>路由配置</span>
+                  </div>
+                </template>
+                <el-descriptions :column="1">
+                  <el-descriptions-item label="默认路由">
+                    {{ config.Router?.default || '未设置' }}
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="后台任务">
+                    {{ config.Router?.background || '未设置' }}
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="推理任务">
+                    {{ config.Router?.think || '未设置' }}
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="长上下文">
+                    {{ config.Router?.longContext || '未设置' }}
+                  </el-descriptions-item>
+                  
+                  <el-descriptions-item label="网络搜索">
+                    {{ config.Router?.webSearch || '未设置' }}
+                  </el-descriptions-item>
+                </el-descriptions>
+              </el-card>
             </div>
           </div>
-        </div>
-        
-        <!-- 提供商配置标签页 -->
-        <div v-show="activeTab === 'providers'" class="tab-pane">
-          <div class="providers-section">
-            <div class="providers-header">
-              <h3>提供商配置 ({{ config.Providers?.length || 0 }} 个)</h3>
-            </div>
-            <div class="providers-list">
-              <div 
-                v-for="(provider, index) in config.Providers" 
-                :key="index" 
-                class="provider-item"
-                :class="{ expanded: expandedProviders[index] }"
-              >
-                <div class="provider-summary" @click="toggleProvider(index)">
-                  <div class="provider-name">{{ provider.name }}</div>
-                  <div class="provider-models-count">{{ provider.models?.length || 0 }} 个模型</div>
-                  <div class="expand-icon">{{ expandedProviders[index] ? '▲' : '▼' }}</div>
+          
+          <div v-else-if="activeTab === 'providers'">
+            <el-card class="providers-section">
+              <template #header>
+                <div class="card-header">
+                  <span>提供商配置 ({{ config.Providers?.length || 0 }} 个)</span>
                 </div>
-                <div v-show="expandedProviders[index]" class="provider-details">
-                  <div class="detail-row">
-                    <span class="label">API URL:</span>
-                    <span class="value">{{ provider.api_base_url }}</span>
-                  </div>
-                  
-                  <div class="detail-row">
-                    <span class="label">API Key:</span>
-                    <span class="value">
-                      <span :class="{ masked: !showApiKeys['provider-' + index] }">{{ getDisplayApiKey(provider.api_key, !showApiKeys['provider-' + index]) }}</span>
-                      <button class="toggle-btn small" @click.stop="toggleApiKeyVisibility('provider-' + index)">
-                        {{ showApiKeys['provider-' + index] ? '隐藏' : '显示' }}
-                      </button>
-                    </span>
-                  </div>
+              </template>
+              <el-collapse v-model="expandedProviders" accordion>
+                <el-collapse-item 
+                  v-for="(provider, index) in config.Providers" 
+                  :key="index" 
+                  :name="index"
+                >
+                  <template #title>
+                    <div class="provider-title">
+                      <span>{{ provider.name }}</span>
+                      <el-tag size="small">{{ provider.models?.length || 0 }} 个模型</el-tag>
+                    </div>
+                  </template>
+                  <el-descriptions :column="1" >
+                    <el-descriptions-item label="API URL">
+                      {{ provider.api_base_url }}
+                    </el-descriptions-item>
+                    
+                    <el-descriptions-item label="API Key">
+                      <span>
+                        <span :class="{ masked: !showApiKeys['provider-' + index] }">{{ getDisplayApiKey(provider.api_key, !showApiKeys['provider-' + index]) }}</span>
+                        <el-button size="small" @click.stop="toggleApiKeyVisibility('provider-' + index)">
+                          {{ showApiKeys['provider-' + index] ? '隐藏' : '显示' }}
+                        </el-button>
+                      </span>
+                    </el-descriptions-item>
+                  </el-descriptions>
                   
                   <div class="models-section" v-if="provider.models && provider.models.length > 0">
                     <div class="models-label">支持的模型:</div>
                     <div class="models-grid">
-                      <span v-for="(model, modelIndex) in provider.models" :key="modelIndex" class="model-tag">
+                      <el-tag v-for="(model, modelIndex) in provider.models" :key="modelIndex" class="model-tag">
                         {{ model }}
-                      </span>
+                      </el-tag>
                     </div>
                   </div>
+                </el-collapse-item>
+              </el-collapse>
+            </el-card>
+          </div>
+          
+          <div v-else-if="activeTab === 'full'">
+            <el-card class="full-config-section">
+              <template #header>
+                <div class="card-header">
+                  <span>完整配置 (JSON)</span>
                 </div>
-              </div>
-            </div>
+              </template>
+              <el-input
+                type="textarea"
+                readonly
+                :rows="30"
+                :value="fullConfigJson"
+                class="full-config"
+              />
+            </el-card>
           </div>
-        </div>
-        
-        <!-- 完整配置标签页 -->
-        <div v-show="activeTab === 'full'" class="tab-pane">
-          <div class="full-config-section">
-            <h3>完整配置 (JSON)</h3>
-            <textarea readonly class="full-config" :value="fullConfigJson"></textarea>
-          </div>
-        </div>
-      </div>
+        </el-col>
+      </el-row>
     </div>
     
-    <div v-else class="no-config">
-      <p>未找到配置文件</p>
-    </div>
+    <el-card v-else shadow="never">
+      <div class="no-config">
+        <p>未找到配置文件</p>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { LoadConfig } from '../../wailsjs/go/main/App'
+import { ElMenu, ElMenuItem, ElRow, ElCol, ElTable, ElTableColumn, ElCard, ElTag, ElCollapse, ElCollapseItem, ElButton } from 'element-plus'
 
 // 响应式数据
 const config = ref(null)
@@ -170,17 +182,11 @@ const error = ref('')
 
 // 标签页相关
 const activeTab = ref('core')
-const tabs = ref([
-  { id: 'core', name: '核心配置' },
-  { id: 'providers', name: '提供商配置' },
-  { id: 'full', name: '完整配置' }
-])
 
 // 控制 API Key 显示状态
 const showApiKeys = ref({})
 
-// 控制提供商展开状态
-const expandedProviders = ref({})
+
 
 // 计算属性：完整配置的 JSON 字符串
 const fullConfigJson = computed(() => {
@@ -202,10 +208,7 @@ function getDisplayApiKey(key, isMasked = true) {
   return '•'.repeat(Math.min(key.length, 20))
 }
 
-// 切换提供商展开状态
-function toggleProvider(index) {
-  expandedProviders.value[index] = !expandedProviders.value[index]
-}
+
 
 // 加载配置
 async function loadSystemConfig() {
@@ -238,57 +241,23 @@ onMounted(() => {
 .system-config-container {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
-  color: #333;
+  background-color: #ffffff;
+  color: #000000;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   overflow: auto;
-  padding: 15px;
+  padding: 5px;
   box-sizing: border-box;
 }
 
-/* 标签页导航 */
-.tabs {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #e1e8ed;
+/* 侧边菜单 */
+.el-menu-vertical-demo {
+  min-height: 800px;
+  border-right: 1px solid #e6e6e6;
+  margin-right: 0;
 }
 
-.tab {
-  padding: 10px 20px;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-size: 0.95em;
-  font-weight: 500;
-  color: #7f8c8d;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.tab:hover {
-  color: #3498db;
-  background-color: rgba(52, 152, 219, 0.1);
-}
-
-.tab.active {
-  color: #3498db;
-  border-bottom: 3px solid #3498db;
-  background-color: rgba(52, 152, 219, 0.05);
-}
-
-/* 标签页内容 */
-.tab-content {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  padding: 20px;
-  min-height: 400px;
-}
-
-.tab-pane {
-  animation: fadeIn 0.3s ease;
+.el-menu-vertical-demo:not(.el-menu--collapse) {
+  width: 150px;
 }
 
 @keyframes fadeIn {
@@ -296,59 +265,37 @@ onMounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.provider-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  color: #000000;
+  font-size: 0.9em;
+}
+
 /* 核心配置网格 */
 .config-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 25px;
+  gap: 15px;
+  margin-left: 0;
 }
 
-.config-group {
-  background: #fafcff;
-  border-radius: 8px;
-  padding: 15px;
-  border: 1px solid #e1e8ed;
+.config-card {
+  margin-bottom: 10px;
+  padding: 5px;
+  margin-left: 0;
 }
 
-.config-group h3 {
-  margin: 0 0 15px 0;
-  color: #2c3e50;
-  font-size: 1.1em;
+.card-header {
+  background-color: #f5f7fa;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ebeef5;
+  border-radius: 4px 4px 0 0;
   font-weight: 600;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
-}
-
-.config-table {
-  padding: 0;
-}
-
-.config-row {
-  display: flex;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.9em;
-}
-
-.config-row:last-child {
-  border-bottom: none;
-}
-
-.config-row .label {
-  font-weight: 600;
-  color: #2c3e50;
-  min-width: 100px;
-  margin-right: 15px;
-  display: flex;
-  align-items: center;
-}
-
-.config-row .value {
-  flex: 1;
-  color: #34495e;
-  word-break: break-word;
-  display: flex;
-  align-items: center;
+  color: #303133;
+  font-size: 16px;
 }
 
 .masked {
@@ -356,190 +303,48 @@ onMounted(() => {
   font-family: monospace;
 }
 
-.toggle-btn {
-  margin-left: 8px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8em;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn.small {
-  padding: 3px 6px;
-  font-size: 0.75em;
-}
-
-.toggle-btn:hover {
-  background-color: #2980b9;
-  transform: translateY(-1px);
-}
-
-.toggle-btn:active {
-  transform: scale(0.95);
-}
-
 /* 提供商配置 */
 .providers-section {
-  padding: 10px 0;
-}
-
-.providers-header h3 {
-  margin: 0 0 15px 0;
-  color: #2c3e50;
-  font-size: 1.1em;
-  font-weight: 600;
-}
-
-.providers-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.provider-item {
-  border: 1px solid #e1e8ed;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fafcff;
-  transition: all 0.3s ease;
-}
-
-.provider-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.provider-summary {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  cursor: pointer;
-  background: linear-gradient(90deg, #2c3e50 0%, #1a2530 100%);
-  color: white;
-}
-
-.provider-name {
-  flex: 1;
-  font-weight: 600;
-  font-size: 1em;
-}
-
-.provider-models-count {
-  font-size: 0.9em;
-  opacity: 0.9;
-  margin-right: 15px;
-}
-
-.expand-icon {
-  font-size: 0.9em;
-  transition: transform 0.3s ease;
-}
-
-.provider-item.expanded .expand-icon {
-  transform: rotate(180deg);
-}
-
-.provider-details {
-  padding: 15px 20px;
-  background: white;
-  border-top: 1px solid #e1e8ed;
-}
-
-.detail-row {
-  display: flex;
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
-  font-size: 0.9em;
-}
-
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-row .label {
-  font-weight: 600;
-  color: #2c3e50;
-  min-width: 100px;
-  margin-right: 15px;
-}
-
-.detail-row .value {
-  flex: 1;
-  color: #34495e;
-  word-break: break-word;
+  padding: 5px 0;
 }
 
 .models-section {
-  margin-top: 15px;
-  padding-top: 15px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid #f0f0f0;
 }
 
 .models-label {
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 10px;
-  font-size: 0.9em;
+  color: #000000;
+  margin-bottom: 8px;
+  font-size: 0.85em;
+  text-align: left;
 }
 
 .models-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .model-tag {
-  background: linear-gradient(135deg, #e1f0fa 0%, #d1e7f5 100%);
-  color: #2980b9;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85em;
-  font-weight: 500;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-}
-
-.model-tag:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 2px;
+  padding: 2px 6px;
+  font-size: 0.8em;
 }
 
 /* 完整配置区域 */
-.full-config-section h3 {
-  margin: 0 0 15px 0;
-  color: #2c3e50;
-  font-size: 1.1em;
-  font-weight: 600;
-}
-
 .full-config {
-  width: 100%;
-  height: 800px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-sizing: border-box;
   font-family: 'Courier New', monospace;
-  background: linear-gradient(180deg, #fdfdfd 0%, #f8f9fa 100%);
-  resize: vertical;
   font-size: 0.9em;
   line-height: 1.5;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e1e8ed;
 }
 
 .loading, .error, .no-config {
   text-align: center;
-  padding: 50px;
-  font-size: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  margin: 20px;
+  padding: 20px;
+  font-size: 16px;
   animation: fadeIn 0.3s ease;
 }
 
@@ -560,8 +365,6 @@ onMounted(() => {
 
 .error {
   color: #e74c3c;
-  background: linear-gradient(180deg, #fdf2f2 0%, #fceaea 100%);
-  border: 1px solid #fadbd8;
 }
 
 .error::before {
@@ -571,7 +374,6 @@ onMounted(() => {
 
 .no-config {
   color: #7f8c8d;
-  background: linear-gradient(180deg, #f8f9fa 0%, #eef2f7 100%);
 }
 
 .no-config::before {
@@ -582,40 +384,40 @@ onMounted(() => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .system-config-container {
-    padding: 10px;
+    padding: 5px;
   }
   
   .tabs {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
   }
   
   .tab {
-    padding: 8px 15px;
+    padding: 6px 12px;
     font-size: 0.9em;
   }
   
   .tab-content {
-    padding: 15px;
+    padding: 10px;
   }
   
   .config-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 15px;
   }
   
   .config-group {
-    padding: 12px;
+    padding: 8px;
   }
   
   .config-group h3 {
     font-size: 1em;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   
   .config-row {
     flex-direction: column;
     gap: 4px;
-    padding: 8px 0;
+    padding: 6px 0;
   }
   
   .config-row .label {
@@ -625,7 +427,7 @@ onMounted(() => {
   }
   
   .provider-summary {
-    padding: 12px 15px;
+    padding: 10px 12px;
   }
   
   .provider-name {
@@ -633,13 +435,13 @@ onMounted(() => {
   }
   
   .provider-details {
-    padding: 12px 15px;
+    padding: 10px 12px;
   }
   
   .detail-row {
     flex-direction: column;
     gap: 4px;
-    padding: 6px 0;
+    padding: 4px 0;
   }
   
   .detail-row .label {
@@ -648,11 +450,11 @@ onMounted(() => {
   }
   
   .models-grid {
-    gap: 6px;
+    gap: 4px;
   }
   
   .model-tag {
-    padding: 4px 10px;
+    padding: 2px 6px;
     font-size: 0.8em;
   }
   
@@ -661,15 +463,15 @@ onMounted(() => {
   }
   
   .loading, .error, .no-config {
-    padding: 30px;
-    font-size: 16px;
-    margin: 15px;
+    padding: 20px;
+    font-size: 14px;
+    margin: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .system-config-container {
-    padding: 8px;
+    padding: 5px;
   }
   
   .tabs {
@@ -677,37 +479,37 @@ onMounted(() => {
   }
   
   .tab {
-    padding: 6px 12px;
-    font-size: 0.85em;
+    padding: 4px 8px;
+    font-size: 0.8em;
   }
   
   .tab-content {
-    padding: 12px;
+    padding: 8px;
   }
   
   .config-group {
-    padding: 10px;
+    padding: 6px;
   }
   
   .config-group h3 {
-    font-size: 0.95em;
-    margin-bottom: 10px;
+    font-size: 0.9em;
+    margin-bottom: 6px;
   }
   
   .config-row,
   .detail-row {
-    padding: 6px 0;
+    padding: 4px 0;
   }
   
   .config-row .label,
   .config-row .value,
   .detail-row .label,
   .detail-row .value {
-    font-size: 0.85em;
+    font-size: 0.8em;
   }
   
   .provider-summary {
-    padding: 10px 12px;
+    padding: 8px 10px;
   }
   
   .provider-name {
@@ -715,35 +517,35 @@ onMounted(() => {
   }
   
   .provider-models-count {
-    font-size: 0.8em;
-    margin-right: 10px;
+    font-size: 0.75em;
+    margin-right: 8px;
   }
   
   .provider-details {
-    padding: 10px 12px;
+    padding: 8px 10px;
   }
   
   .model-tag {
-    padding: 3px 8px;
-    font-size: 0.75em;
+    padding: 2px 6px;
+    font-size: 0.7em;
     margin: 1px;
   }
   
   .toggle-btn {
-    padding: 2px 4px;
-    font-size: 0.7em;
+    padding: 1px 3px;
+    font-size: 0.65em;
   }
   
   .full-config {
     height: 250px;
-    padding: 10px;
-    font-size: 0.8em;
+    padding: 8px;
+    font-size: 0.75em;
   }
   
   .loading, .error, .no-config {
-    padding: 20px;
-    font-size: 14px;
-    margin: 10px;
+    padding: 15px;
+    font-size: 12px;
+    margin: 8px;
   }
 }
 </style>

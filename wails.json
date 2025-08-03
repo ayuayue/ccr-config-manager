@@ -24,5 +24,8 @@
     "cliFlags": [
       "-V3"
     ]
+  },
+  "windows": {
+    "iconfile": "build/windows/icon.ico"
   }
 }

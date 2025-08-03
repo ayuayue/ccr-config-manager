@@ -169,12 +169,13 @@
                 <el-row :gutter="10">
                   <el-col :span="24">
                     <div>
-                      <div class="card-header"
-                        style="display: flex; justify-content: space-between; align-items: center;">
+                      <div class="card-header">
                         <span>服务日志</span>
-                        <div>
-                          <el-button type="danger" @click="loadLogs" style="margin-right: 10px;">刷新日志</el-button>
-                          <el-button type="danger" @click="clearLogs" style="margin-right: 10px;">清空日志</el-button>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                          <el-button type="danger" @click="loadLogs" style="margin-right: 8px;">刷新日志</el-button>
+
+                          <el-button type="danger" @click="clearLogs" style="margin-right: -10px;">清空日志</el-button>
                         </div>
                       </div>
 

@@ -1,13 +1,10 @@
 <script setup>
-import { ref } from 'vue'
 import ClaudeConfig from './components/ClaudeConfig.vue'
-import { BrowserOpenURL, ClipboardSetText } from '../wailsjs/runtime'
+import { BrowserOpenURL } from '../wailsjs/runtime'
 import { ElButton, ElContainer, ElHeader, ElMain, ElMenu, ElMenuItem, ElMessageBox, ElIcon, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
-import { ArrowDown } from '@element-plus/icons-vue'
-import { ReadREADME, LoadConfig, SaveConfig } from '../wailsjs/go/main/App'
 
 const openGitHub = () => {
-  BrowserOpenURL('https://github.com/ayuayue/ccr-config-manager')
+  BrowserOpenURL('https://github.com/ayuayue/ccr-config-manager/blob/master/README.md')
 }
 
 // 加载配置

@@ -23,7 +23,11 @@
       "Bash(yamllint:*)",
       "Bash(find:*)",
       "Bash(cat:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(wails dev:*)",
+      "Bash(where:*)",
+      "Bash(ccr:*)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }
