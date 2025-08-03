@@ -491,16 +491,6 @@ func isWindows() bool {
 		   strings.HasSuffix(os.Getenv("PATH"), ";")
 }
 
-// getSysProcAttr returns SysProcAttr to hide the command window on Windows
-func getSysProcAttr() *syscall.SysProcAttr {
-	if runtime.GOOS == "windows" {
-		return &syscall.SysProcAttr{
-			HideWindow: true,
-		}
-	}
-	return nil
-}
-
 // StartService starts the CCR service
 func (a *App) StartService() error {
 	// 查找ccr命令的绝对路径
