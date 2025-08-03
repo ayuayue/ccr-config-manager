@@ -1,115 +1,146 @@
 <script setup>
 import { ref } from 'vue'
-import SystemConfig from './components/SystemConfig.vue'
 import ClaudeConfig from './components/ClaudeConfig.vue'
 import { BrowserOpenURL, ClipboardSetText } from '../wailsjs/runtime'
-
-const currentView = ref('home')
+import { ElButton, ElContainer, ElHeader, ElMain, ElMenu, ElMenuItem, ElMessageBox, ElIcon, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
+import { ArrowDown } from '@element-plus/icons-vue'
+import { ReadREADME, LoadConfig, SaveConfig } from '../wailsjs/go/main/App'
 
 const openGitHub = () => {
   BrowserOpenURL('https://github.com/ayuayue/ccr-config-manager')
 }
 
-const copyGitHubUrl = () => {
-  ClipboardSetText('https://github.com/ayuayue/ccr-config-manager')
-  alert('GitHub 地址已复制到剪贴板')
+// 加载配置
+const loadConfig = async () => {
+  try {
+    // 调用ClaudeConfig组件的加载配置方法
+    // 这里我们需要通过事件来通知ClaudeConfig组件重新加载配置
+    const event = new CustomEvent('reload-config')
+    window.dispatchEvent(event)
+  } catch (error) {
+    ElMessageBox.alert('加载配置时出错: ' + error.message, '错误', {
+      confirmButtonText: '确定',
+      type: 'error'
+    })
+  }
 }
+
+// 保存配置
+const saveConfig = async () => {
+  try {
+    // 调用ClaudeConfig组件的保存配置方法
+    // 这里我们需要通过事件来通知ClaudeConfig组件保存配置
+    const event = new CustomEvent('save-config')
+    window.dispatchEvent(event)
+  } catch (error) {
+    ElMessageBox.alert('保存配置时出错: ' + error.message, '错误', {
+      confirmButtonText: '确定',
+      type: 'error'
+    })
+  }
+}
+
 </script>
 
 <template>
-  <nav class="navigation">
-    <button 
-      :class="{ active: currentView === 'home' }" 
-      @click="currentView = 'home'"
-    >
-      系统配置
-    </button>
-    <button 
-      :class="{ active: currentView === 'config' }" 
-      @click="currentView = 'config'"
-    >
-      配置管理
-    </button>
-    <div class="nav-spacer"></div>
-    <div class="nav-info">
-      <span class="author">作者: caoayu</span>
-      <button class="github-link" @click="openGitHub" @contextmenu.prevent="copyGitHubUrl">
-        GitHub 仓库
-      </button>
-    </div>
-  </nav>
+  <el-container class="app-container">
+    <el-header class="app-header">
+      <div class="header-content">
+        <div class="header-left">
+          <el-button class="about-button" @click="openGitHub">
+            关于
+          </el-button>
+        </div>
+        <h1>CCR 配置管理器</h1>
+        <div class="nav-info">
+          <el-button @click="loadConfig">刷新配置</el-button>
+          <el-button type="primary" @click="saveConfig">保存配置</el-button>
+        </div>
+      </div>
+    </el-header>
 
-  <div class="view-container">
-    <SystemConfig v-if="currentView === 'home'" />
-    <ClaudeConfig v-if="currentView === 'config'" />
-  </div>
+    <el-main class="app-main">
+      <div class="view-container">
+        <ClaudeConfig />
+      </div>
+    </el-main>
+  </el-container>
 </template>
 
 <style>
-.navigation {
+.app-container {
+  background-color: #ffffff;
+  height: 100vh;
+}
+
+.app-header {
+  padding: 0 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header-content {
   display: flex;
-  justify-content: center;
-  padding: 15px 20px;
-  background-color: #2c3e50;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
 }
 
-.navigation button {
-  background-color: transparent;
-  color: #ecf0f1;
-  border: none;
-  padding: 8px 16px;
-  margin: 0 5px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+.header-left {
+  display: flex;
+  align-items: center;
 }
 
-.navigation button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.navigation button.active {
-  background-color: #3498db;
-  color: white;
-}
-
-.nav-spacer {
-  flex-grow: 1;
+.header-content h1 {
+  margin: 0;
+  color: #333333;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .nav-info {
   display: flex;
   align-items: center;
   gap: 15px;
-  color: #ecf0f1;
+  color: #333333;
   font-size: 14px;
 }
 
-.author {
-  white-space: nowrap;
+.about-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
 }
 
-.github-link {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
+.about-button:hover {
+  background-color: #f5f7fa;
+  border-color: #c0c4cc;
 }
 
-.github-link:hover {
-  background-color: #2980b9;
+/* 关于对话框样式 */
+.about-dialog {
+  width: 800px !important;
+  max-width: 90vw !important;
+}
+
+.about-dialog .el-message-box__content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.about-dialog .el-message-box__message {
+  padding: 20px;
+}
+
+.app-main {
+  background-color: #ffffff;
+  padding: 0;
 }
 
 .view-container {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 61px);
+  background-color: #ffffff;
+  padding: 10px;
 }
 </style>
