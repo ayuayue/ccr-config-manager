@@ -19,12 +19,23 @@ CCR 配置管理器是一个用于管理和配置 Claude Code Router (CCR) 的�
 
 ### 启动应用
 
+1. 前往[GitHub Releases页面](https://github.com/ayuayue/ccr-config-manager/releases)下载适用于您操作系统的最新版本
+2. 解压下载的文件
+3. 直接运行解压后的可执行文件即可启动应用
+
+### 从源码构建（开发者选项）
+
+如果您想从源码构建应用，请确保已安装Go 1.19+和Node.js 16+。
+
 运行以下命令启动开发模式：
 ```bash
 wails dev
 ```
 
-或者使用构建好的可执行文件启动应用。
+或者构建生产版本：
+```bash
+wails build
+```
 
 ### 导航界面
 
