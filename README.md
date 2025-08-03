@@ -134,7 +134,7 @@ wails build
 
 ## CCR 项目地址
 
-[https://github.com/alexrider203/claud-code-router](https://github.com/alexrider203/claud-code-router)
+[https://github.com/musistudio/claude-code-router](https://github.com/musistudio/claude-code-router)
 
 ## 本项目地址
 
