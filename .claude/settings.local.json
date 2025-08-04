@@ -27,7 +27,8 @@
       "Bash(wails dev:*)",
       "Bash(where:*)",
       "Bash(ccr:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(powershell:*)"
     ],
     "deny": []
   }

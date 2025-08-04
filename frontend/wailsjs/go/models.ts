@@ -7,6 +7,7 @@ export namespace main {
 	    PORT?: any;
 	    API_TIMEOUT_MS?: any;
 	    LOG?: any;
+	    NPM_GLOBAL_PREFIX?: any;
 	    Providers?: any;
 	    Router?: any;
 	
@@ -22,6 +23,7 @@ export namespace main {
 	        this.PORT = source["PORT"];
 	        this.API_TIMEOUT_MS = source["API_TIMEOUT_MS"];
 	        this.LOG = source["LOG"];
+	        this.NPM_GLOBAL_PREFIX = source["NPM_GLOBAL_PREFIX"];
 	        this.Providers = source["Providers"];
 	        this.Router = source["Router"];
 	    }

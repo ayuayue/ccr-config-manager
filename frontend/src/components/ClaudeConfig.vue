@@ -7,6 +7,7 @@
           <el-menu-item index="service">服务管理</el-menu-item>
           <el-menu-item index="basic">基础配置</el-menu-item>
           <el-menu-item index="providers">提供商配置</el-menu-item>
+          <el-menu-item index="applogs">应用程序日志</el-menu-item>
           <el-menu-item index="full">完整配置</el-menu-item>
         </el-menu>
       </el-col>
@@ -121,6 +122,31 @@
                   <h3>服务管理</h3>
                 </div>
 
+                <!-- npm全局安装目录设置 -->
+                <el-row :gutter="10">
+                  <el-col :span="24">
+                    <div style="margin-bottom: 20px;">
+                      <div class="card-header">
+                        <span>npm全局安装目录设置</span>
+                      </div>
+                      
+                      <el-form >
+                        <el-form-item label="目录路径">
+                          <el-input v-model="config.NPM_GLOBAL_PREFIX" placeholder="例如: C:\Users\YourName\AppData\Roaming\npm">
+                            <template #append>
+                              <el-button type="primary" style="color: white;" @click="showNpmPrefixHelp">帮助</el-button>
+                            </template>
+                          </el-input>
+                          <div class="help-text">CCR服务将在此目录中查找可执行文件。如果未设置，将使用默认逻辑。</div>
+                        </el-form-item>
+                      </el-form>
+                    </div>
+                  </el-col>
+                </el-row>
+
+                <!-- 分割线 -->
+                <el-divider></el-divider>
+
                 <!-- 服务状态部分 -->
                 <el-row :gutter="10">
                   <el-col :span="24">
@@ -149,13 +175,13 @@
                         <el-button type="primary" @click="refreshServiceStatus" style="margin-right: 10px;">
                           刷新状态
                         </el-button>
-                        <el-button v-if="serviceStatus.isRunning" type="danger" @click="stopService"
+                        <el-button type="danger" @click="stopService"
                           :loading="serviceLoading.stop" style="margin-right: 10px;">
                           停止服务
                         </el-button>
-                        <el-button v-if="!serviceStatus.isRunning" type="success" @click="startService"
-                          :loading="serviceLoading.start" style="margin-right: 0;">
-                          启动服务
+                        <el-button type="warning" @click="restartService"
+                          :loading="serviceLoading.restart" style="margin-right: 0;">
+                          重启服务
                         </el-button>
                       </div>
                     </div>
@@ -242,6 +268,24 @@ anthropic/claude-3.5-sonnet" :rows="4"></el-input>
           </el-row>
         </div>
 
+        <div v-else-if="activeTab === 'applogs'">
+          <el-row :gutter="10">
+            <el-col :span="24">
+              <el-card class="config-card">
+                <div class="card-header">
+                  <span>应用程序日志</span>
+                  <div style="display: flex; justify-content: flex-end;">
+                    <el-button type="danger" @click="clearAppLogs" style="margin-right: 8px;">清空日志</el-button>
+                    <el-button type="primary" @click="loadAppLogs" style="margin-right: 0;">刷新日志</el-button>
+                  </div>
+                </div>
+                <el-input type="textarea" v-model="appLogs" :rows="20" readonly
+                  style="font-family: monospace; font-size: 12px;" placeholder="暂无应用程序日志内容"></el-input>
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+
         <div v-else-if="activeTab === 'full'">
           <el-row :gutter="10">
             <el-col :span="24">
@@ -262,12 +306,12 @@ anthropic/claude-3.5-sonnet" :rows="4"></el-input>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
-import { LoadConfig, SaveConfig, GetServiceStatus, StartService, StopService, RestartService, ReadLogs, ClearLogs, GetCCRVersion } from '../../wailsjs/go/main/App'
+import { LoadConfig, SaveConfig, GetServiceStatus, StartService, StopService, RestartService, ReadLogs, ClearLogs, GetCCRVersion, ReadAppLogs, ClearAppLogs } from '../../wailsjs/go/main/App'
 import { ClipboardSetText } from '../../wailsjs/runtime'
 import {
   ElMenu, ElMenuItem, ElForm, ElFormItem, ElInput, ElSelect, ElOption,
   ElButton, ElCard, ElCollapse, ElCollapseItem, ElSwitch, ElMessage,
-  ElRow, ElCol, ElTag, ElDivider, ElDescriptions, ElDescriptionsItem, ElNotification
+  ElRow, ElCol, ElTag, ElDivider, ElDescriptions, ElDescriptionsItem, ElNotification, ElMessageBox
 } from 'element-plus'
 
 // 标签页相关
@@ -279,6 +323,9 @@ watch(activeTab, (newTab) => {
   if (newTab === 'service') {
     // loadLogs()
     // 不再自动加载服务状态和版本号，用户可以手动点击刷新按钮
+  } else if (newTab === 'applogs') {
+    // 自动加载应用程序日志
+    loadAppLogs()
   }
 })
 
@@ -294,6 +341,7 @@ const config = reactive({
   PORT: 3456,
   API_TIMEOUT_MS: 600000,
   LOG: false,
+  NPM_GLOBAL_PREFIX: '',
   Providers: [],
   Router: {
     default: '',
@@ -331,6 +379,9 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
 
 // 日志数据
 const logs = ref('')
+
+// 应用程序日志数据
+const appLogs = ref('')
 
 // 计算属性：完整配置的 JSON 字符串
 const fullConfigJson = computed({
@@ -461,6 +512,15 @@ function removeProvider(index) {
   config.Providers.splice(index, 1)
 }
 
+// 显示npm全局安装目录帮助信息
+function showNpmPrefixHelp() {
+  ElMessageBox.alert('请在终端中运行以下命令获取npm全局安装目录：<br><br><code>npm config get prefix</code><br><br>然后将输出的路径粘贴到上面的输入框中。', '帮助', {
+    confirmButtonText: '确定',
+    dangerouslyUseHTMLString: true,
+    type: 'info'
+  })
+}
+
 // 保存配置
 async function saveConfig() {
   try {
@@ -472,6 +532,7 @@ async function saveConfig() {
       PORT: config.PORT || 3456,
       API_TIMEOUT_MS: config.API_TIMEOUT_MS || 600000,
       LOG: config.LOG || false,
+      NPM_GLOBAL_PREFIX: config.NPM_GLOBAL_PREFIX || undefined,
       Providers: config.Providers.map(provider => {
         const result = {
           name: provider.name,
@@ -522,6 +583,7 @@ async function loadConfig() {
     config.PORT = loadedConfig.PORT || 3456
     config.API_TIMEOUT_MS = loadedConfig.API_TIMEOUT_MS || 600000
     config.LOG = loadedConfig.LOG || false
+    config.NPM_GLOBAL_PREFIX = loadedConfig.NPM_GLOBAL_PREFIX || ''
 
     // 更新路由配置
     if (loadedConfig.Router) {
@@ -772,6 +834,17 @@ async function loadLogs() {
   }
 }
 
+// 加载应用程序日志
+async function loadAppLogs() {
+  try {
+    const logContent = await ReadAppLogs()
+    appLogs.value = logContent || ''
+  } catch (error) {
+    console.error('加载应用程序日志时出错:', error)
+    appLogs.value = '读取应用程序日志时出错: ' + (error.message || '未知错误')
+  }
+}
+
 // 加载CCR版本号
 async function loadCCRVersion() {
   // 检查缓存
@@ -808,6 +881,18 @@ async function clearLogs() {
   } catch (error) {
     console.error('清空日志时出错:', error)
     showStatus('清空日志时出错: ' + (error.message || '未知错误'), 'error')
+  }
+}
+
+// 清空应用程序日志
+async function clearAppLogs() {
+  try {
+    await ClearAppLogs()
+    appLogs.value = ''
+    showStatus('应用程序日志已清空', 'success')
+  } catch (error) {
+    console.error('清空应用程序日志时出错:', error)
+    showStatus('清空应用程序日志时出错: ' + (error.message || '未知错误'), 'error')
   }
 }
 
