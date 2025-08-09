@@ -1,18 +1,20 @@
 <template>
   <div class="claude-config-container">
 
-    <el-row :gutter="10">
-      <el-col :span="3">
-        <el-menu :default-active="activeTab" class="el-menu-vertical-demo" @select="activeTab = $event">
-          <el-menu-item index="service">服务管理</el-menu-item>
-          <el-menu-item index="basic">基础配置</el-menu-item>
-          <el-menu-item index="providers">提供商配置</el-menu-item>
-          <el-menu-item index="applogs">应用程序日志</el-menu-item>
-          <el-menu-item index="full">完整配置</el-menu-item>
-        </el-menu>
+    <el-row :gutter="10" class="main-content">
+      <el-col :span="3" class="sidebar-col">
+        <div class="sidebar-wrapper">
+          <el-menu :default-active="activeTab" class="el-menu-vertical-demo" @select="activeTab = $event">
+            <el-menu-item index="service">服务管理</el-menu-item>
+            <el-menu-item index="basic">基础配置</el-menu-item>
+            <el-menu-item index="providers">提供商配置</el-menu-item>
+            <el-menu-item index="applogs">应用程序日志</el-menu-item>
+            <el-menu-item index="full">完整配置</el-menu-item>
+          </el-menu>
+        </div>
       </el-col>
 
-      <el-col :span="20">
+      <el-col :span="20" class="content-col">
         <div v-if="activeTab === 'basic'">
           <el-row :gutter="10">
             <!-- 基础配置在左侧 -->
@@ -943,10 +945,34 @@ onMounted(() => {
   background-color: #ffffff;
   color: #000000;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  overflow: auto;
+  overflow: hidden;
   padding: 5px;
   box-sizing: border-box;
   position: relative;
+}
+
+.main-content {
+  height: 100%;
+}
+
+.sidebar-col {
+  height: 100%;
+}
+
+.sidebar-wrapper {
+  position: fixed;
+  width: calc(3 / 24 * 100% - 10px);
+  height: calc(100vh - 61px - 10px);
+  overflow-y: auto;
+  padding: 5px 0;
+  box-sizing: border-box;
+}
+
+.content-col {
+  height: calc(100vh - 61px - 10px);
+  overflow-y: auto;
+  padding: 0 5px;
+  box-sizing: border-box;
 }
 
 /* 侧边菜单 */

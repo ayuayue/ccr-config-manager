@@ -6,11 +6,19 @@ export function ClearAppLogs():Promise<void>;
 
 export function ClearLogs():Promise<void>;
 
+export function CompareVersions(arg1:string,arg2:string):Promise<boolean>;
+
+export function DownloadUpdate(arg1:string):Promise<string>;
+
 export function GetAppLogPath():Promise<string>;
+
+export function GetAppVersion():Promise<string>;
 
 export function GetCCRVersion():Promise<string>;
 
 export function GetConfigPath():Promise<string>;
+
+export function GetLatestVersionFromGitHub():Promise<string>;
 
 export function GetLogPath():Promise<string>;
 

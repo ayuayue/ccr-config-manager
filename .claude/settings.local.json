@@ -28,7 +28,8 @@
       "Bash(where:*)",
       "Bash(ccr:*)",
       "Bash(echo:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "WebFetch(domain:api.github.com)"
     ],
     "deny": []
   }

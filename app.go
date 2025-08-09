@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -1341,4 +1344,358 @@ func (a *App) ReadAppLogs() (string, error) {
 	}
 
 	return strings.Join(lines, "\n"), nil
+}
+
+// GetAppVersion returns the version of the application
+func (a *App) GetAppVersion() string {
+	// For now, return a fixed version
+	// In the future, this could read from a version file or be set at build time
+	return "v2.0.3"
+}
+
+// GetLatestVersionFromGitHub checks GitHub for the latest version tag
+// Implements fallback mechanisms to handle rate limits
+func (a *App) GetLatestVersionFromGitHub() (string, error) {
+	// Try primary method first - GitHub API
+	version, err := a.getLatestVersionFromGitHubAPI()
+	if err == nil {
+		return version, nil
+	}
+	
+	// If primary method fails, try fallback - RSS feed
+	if a.logger != nil {
+		a.logger.Printf("INFO: Primary GitHub API method failed, trying RSS feed fallback: %v", err)
+	}
+	version, err = a.getLatestVersionFromRSS()
+	if err == nil {
+		return version, nil
+	}
+	
+	// All methods failed
+	if a.logger != nil {
+		a.logger.Printf("ERROR: All methods failed to fetch latest version: %v", err)
+	}
+	return "", fmt.Errorf("failed to fetch latest version from all sources: %v", err)
+}
+
+// getLatestVersionFromGitHubAPI fetches the latest version using GitHub API
+func (a *App) getLatestVersionFromGitHubAPI() (string, error) {
+	// GitHub API URL for tags
+	url := "https://api.github.com/repos/ayuayue/ccr-config-manager/tags"
+	
+	// Create HTTP request
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %v", err)
+	}
+	
+	// Add user agent to avoid being blocked
+	req.Header.Set("User-Agent", "CCR-Config-Manager")
+	
+	resp, err := client.Do(req)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to fetch tags from GitHub API: %v", err)
+		}
+		return "", fmt.Errorf("failed to fetch tags from GitHub API: %v", err)
+	}
+	defer resp.Body.Close()
+	
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: GitHub API request failed with status: %d", resp.StatusCode)
+		}
+		return "", fmt.Errorf("GitHub API request failed with status: %d", resp.StatusCode)
+	}
+	
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to read response body: %v", err)
+		}
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+	
+	// Parse JSON response
+	var tags []map[string]interface{}
+	if err := json.Unmarshal(body, &tags); err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to parse JSON response: %v", err)
+		}
+		return "", fmt.Errorf("failed to parse JSON response: %v", err)
+	}
+	
+	// Check if we have any tags
+	if len(tags) == 0 {
+		err := fmt.Errorf("no tags found for repository")
+		if a.logger != nil {
+			a.logger.Printf("ERROR: %v", err)
+		}
+		return "", err
+	}
+	
+	// Get the first tag (latest)
+	if name, ok := tags[0]["name"].(string); ok {
+		if a.logger != nil {
+			a.logger.Printf("INFO: Latest version found via API: %s", name)
+		}
+		return name, nil
+	}
+	
+	err = fmt.Errorf("failed to extract tag name from response")
+	if a.logger != nil {
+		a.logger.Printf("ERROR: %v", err)
+	}
+	return "", err
+}
+
+// getLatestVersionFromRSS fetches the latest version using GitHub RSS feed
+func (a *App) getLatestVersionFromRSS() (string, error) {
+	// GitHub RSS feed URL for releases
+	url := "https://github.com/ayuayue/ccr-config-manager/releases.atom"
+	
+	// Create HTTP request
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create RSS request: %v", err)
+	}
+	
+	// Add user agent to avoid being blocked
+	req.Header.Set("User-Agent", "CCR-Config-Manager")
+	
+	resp, err := client.Do(req)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to fetch RSS feed: %v", err)
+		}
+		return "", fmt.Errorf("failed to fetch RSS feed: %v", err)
+	}
+	defer resp.Body.Close()
+	
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: RSS feed request failed with status: %d", resp.StatusCode)
+		}
+		return "", fmt.Errorf("RSS feed request failed with status: %d", resp.StatusCode)
+	}
+	
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to read RSS response body: %v", err)
+		}
+		return "", fmt.Errorf("failed to read RSS response body: %v", err)
+	}
+	
+	// Parse RSS feed to extract latest version
+	// Simple approach: look for first <title> tag that contains a version-like string
+	content := string(body)
+	
+	// Find all title tags
+	titleStart := strings.Index(content, "<title>")
+	if titleStart == -1 {
+		return "", fmt.Errorf("no title tags found in RSS feed")
+	}
+	
+	// Look for version pattern in titles
+	// Skip the first title which is usually the feed title
+	content = content[titleStart+7:]
+	titleStart = strings.Index(content, "<title>")
+	if titleStart == -1 {
+		return "", fmt.Errorf("no release titles found in RSS feed")
+	}
+	
+	content = content[titleStart+7:]
+	titleEnd := strings.Index(content, "</title>")
+	if titleEnd == -1 {
+		return "", fmt.Errorf("malformed title tag in RSS feed")
+	}
+	
+	title := content[:titleEnd]
+	
+	// Extract version from title (assuming format "Release vX.X.X" or "vX.X.X")
+	// Look for version pattern
+	versionRegex := regexp.MustCompile(`v\d+\.\d+\.\d+`)
+	matches := versionRegex.FindStringSubmatch(title)
+	if len(matches) > 0 {
+		if a.logger != nil {
+			a.logger.Printf("INFO: Latest version found via RSS: %s", matches[0])
+		}
+		return matches[0], nil
+	}
+	
+	// Try simpler pattern for any v followed by numbers and dots
+	simpleRegex := regexp.MustCompile(`v[\d.]+`)
+	matches = simpleRegex.FindStringSubmatch(title)
+	if len(matches) > 0 {
+		if a.logger != nil {
+			a.logger.Printf("INFO: Latest version found via RSS (simple pattern): %s", matches[0])
+		}
+		return matches[0], nil
+	}
+	
+	return "", fmt.Errorf("failed to extract version from RSS title: %s", title)
+}
+
+// CompareVersions compares two version strings
+func (a *App) CompareVersions(current, latest string) bool {
+	// Simple version comparison assuming semantic versioning (e.g., v1.2.3)
+	// Remove 'v' prefix if present
+	current = strings.TrimPrefix(current, "v")
+	latest = strings.TrimPrefix(latest, "v")
+	
+	// Split version strings into parts
+	currentParts := strings.Split(current, ".")
+	latestParts := strings.Split(latest, ".")
+	
+	// Compare each part numerically
+	for i := 0; i < len(currentParts) && i < len(latestParts); i++ {
+		currentNum, err1 := strconv.Atoi(currentParts[i])
+		latestNum, err2 := strconv.Atoi(latestParts[i])
+		
+		if err1 != nil || err2 != nil {
+			// If we can't parse a part as a number, fall back to string comparison
+			if latestParts[i] > currentParts[i] {
+				return true
+			} else if latestParts[i] < currentParts[i] {
+				return false
+			}
+			continue
+		}
+		
+		if latestNum > currentNum {
+			return true
+		} else if latestNum < currentNum {
+			return false
+		}
+	}
+	
+	// If all compared parts are equal, check if latest has more parts
+	return len(latestParts) > len(currentParts)
+}
+
+// DownloadUpdate downloads the latest version from GitHub
+func (a *App) DownloadUpdate(version string) (string, error) {
+	// Create downloads directory if it doesn't exist
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home directory: %v", err)
+	}
+	
+	downloadsDir := filepath.Join(homeDir, "Downloads")
+	if err := os.MkdirAll(downloadsDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create downloads directory: %v", err)
+	}
+	
+	// Determine the appropriate asset name based on the operating system
+	assetName := ""
+	fileName := ""
+	
+	// Get the operating system
+	goos := os.Getenv("GOOS")
+	if goos == "" {
+		goos = runtime.GOOS
+	}
+	
+	// Set asset name and file name based on OS
+	switch goos {
+	case "windows":
+		assetName = fmt.Sprintf("claudeConfigManager_%s_windows_amd64_installer.exe", strings.TrimPrefix(version, "v"))
+		fileName = fmt.Sprintf("claudeConfigManager_%s_windows_amd64_installer.exe", strings.TrimPrefix(version, "v"))
+	case "darwin":
+		// For macOS, default to arm64 (Apple Silicon)
+		arch := os.Getenv("GOARCH")
+		if arch == "" {
+			arch = runtime.GOARCH
+		}
+		if arch == "arm64" {
+			assetName = fmt.Sprintf("claudeConfigManager_%s_mac_arm64.zip", strings.TrimPrefix(version, "v"))
+			fileName = fmt.Sprintf("claudeConfigManager_%s_mac_arm64.zip", strings.TrimPrefix(version, "v"))
+		} else {
+			assetName = fmt.Sprintf("claudeConfigManager_%s_mac_intel.zip", strings.TrimPrefix(version, "v"))
+			fileName = fmt.Sprintf("claudeConfigManager_%s_mac_intel.zip", strings.TrimPrefix(version, "v"))
+		}
+	case "linux":
+		assetName = fmt.Sprintf("claudeConfigManager_%s_linux_amd64.tar.gz", strings.TrimPrefix(version, "v"))
+		fileName = fmt.Sprintf("claudeConfigManager_%s_linux_amd64.tar.gz", strings.TrimPrefix(version, "v"))
+	default:
+		// Default to Windows installer for unknown platforms
+		assetName = fmt.Sprintf("claudeConfigManager_%s_windows_amd64_installer.exe", strings.TrimPrefix(version, "v"))
+		fileName = fmt.Sprintf("claudeConfigManager_%s_windows_amd64_installer.exe", strings.TrimPrefix(version, "v"))
+	}
+	
+	// Construct download URL
+	url := fmt.Sprintf("https://github.com/ayuayue/ccr-config-manager/releases/download/%s/%s", version, assetName)
+	
+	// Create file path
+	filePath := filepath.Join(downloadsDir, fileName)
+	
+	if a.logger != nil {
+		a.logger.Printf("INFO: Downloading update from %s to %s", url, filePath)
+	}
+	
+	// Create HTTP request with timeout
+	client := &http.Client{
+		Timeout: 300 * time.Second, // 5 minutes timeout for download
+	}
+	
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create download request: %v", err)
+	}
+	
+	// Add user agent to avoid being blocked
+	req.Header.Set("User-Agent", "CCR-Config-Manager")
+	
+	resp, err := client.Do(req)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to download update: %v", err)
+		}
+		return "", fmt.Errorf("failed to download update: %v", err)
+	}
+	defer resp.Body.Close()
+	
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Download request failed with status: %d", resp.StatusCode)
+		}
+		return "", fmt.Errorf("download request failed with status: %d", resp.StatusCode)
+	}
+	
+	// Create file
+	file, err := os.Create(filePath)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to create file: %v", err)
+		}
+		return "", fmt.Errorf("failed to create file: %v", err)
+	}
+	defer file.Close()
+	
+	// Copy response body to file with progress (optional)
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		if a.logger != nil {
+			a.logger.Printf("ERROR: Failed to save file: %v", err)
+		}
+		return "", fmt.Errorf("failed to save file: %v", err)
+	}
+	
+	if a.logger != nil {
+		a.logger.Printf("INFO: Update downloaded successfully to %s", filePath)
+	}
+	
+	return filePath, nil
 }

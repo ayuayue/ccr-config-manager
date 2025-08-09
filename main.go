@@ -17,7 +17,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "claudeConfigManager",
+		Title:  "claude code router 配置管理器",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

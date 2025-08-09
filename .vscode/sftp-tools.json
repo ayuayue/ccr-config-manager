@@ -1,0 +1,8 @@
+{
+    "servers": [],
+    "settings": {
+        "showConfirmDialog": true,
+        "uploadOrDeleteBackup": "/",
+        "enableAutoUpload": false
+    }
+}

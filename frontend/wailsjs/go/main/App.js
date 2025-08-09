@@ -10,8 +10,20 @@ export function ClearLogs() {
   return window['go']['main']['App']['ClearLogs']();
 }
 
+export function CompareVersions(arg1, arg2) {
+  return window['go']['main']['App']['CompareVersions'](arg1, arg2);
+}
+
+export function DownloadUpdate(arg1) {
+  return window['go']['main']['App']['DownloadUpdate'](arg1);
+}
+
 export function GetAppLogPath() {
   return window['go']['main']['App']['GetAppLogPath']();
+}
+
+export function GetAppVersion() {
+  return window['go']['main']['App']['GetAppVersion']();
 }
 
 export function GetCCRVersion() {
@@ -20,6 +32,10 @@ export function GetCCRVersion() {
 
 export function GetConfigPath() {
   return window['go']['main']['App']['GetConfigPath']();
+}
+
+export function GetLatestVersionFromGitHub() {
+  return window['go']['main']['App']['GetLatestVersionFromGitHub']();
 }
 
 export function GetLogPath() {
